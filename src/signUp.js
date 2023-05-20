@@ -6,6 +6,7 @@ import TextField2 from "./textField2";
 import { SelectList } from 'react-native-dropdown-select-list';
 import Icon from "react-native-vector-icons/Ionicons";
 import { colors } from "../assets/constants/colors";
+import MaterialIcons from "react-native-vector-icons/MaterialIcons";
 import auth from '@react-native-firebase/auth';
 import database from '@react-native-firebase/database';
 export default function SignUp({navigation}){
@@ -21,6 +22,10 @@ export default function SignUp({navigation}){
       const [firstName, setFirstName] = useState('')
       const [lastName, setLastName] = useState('')
       const [phoneNumber, setPhoneNumber] = useState('')
+    
+                    
+            
+    
   
       function SignUpAuth(){
        
@@ -51,11 +56,11 @@ export default function SignUp({navigation}){
       }
       }
     return(
-        <View style = {{flex:1}}>
-        <Background2> 
+        <View style = {{flex: 1 ,  backgroundColor:'white'}}>
+        <View style = {{backgroundColor:'#1F4A83' , height:1000 , marginTop:60, width:370, borderTopLeftRadius:80 ,borderTopRightRadius:80}}>
         {/* color: colors.primary */}
 
-            <Text style={{fontFamily: "Poppins-Bold", fontSize: 30, alignSelf:"center", marginTop :30,color:'white' }}>Sign Up</Text>
+            <Text style={{fontFamily: "Poppins-SemiBold", fontSize: 30, alignSelf:"center", marginTop :30,color:'white' }}>REGISTER</Text>
             <TextField2 placeholder="First Name" name="edit"   onChangeText={setFirstName} value={firstName}  />
             <TextField2 placeholder="Last Name" name="edit"  onChangeText={setLastName} value={lastName}/>
             <TextField2 placeholder="Email" keyboardType="numeric" name="mail-outline"  onChangeText={setEmail} value={email} />
@@ -63,42 +68,44 @@ export default function SignUp({navigation}){
             <TextField2 placeholder="Confirm Password" secureTextEntry={true} name="lock" onChangeText={setConfirmPassword} value={confirmPassword}  />
             <TextField2 placeholder="Phone Number"  name="phone"   onChangeText={setPhoneNumber} value={phoneNumber} 
             />
-           <View style = {{zIndex: 1 , marginLeft:20, marginTop:17, backgroundColor:'white' , height:55, width:300,marginLeft:20, borderRadius:22}}>
+      
             <SelectList
-              setSelected={(val) =>  setLanguage(val)}
-              data={data}
-              save="value"
-              arrowicon={<Icon name="chevron-down" size={22} style={{ marginTop: 5 }} color={colors.primary} />}
-              searchicon={<Icon name="search-outline" style={{ marginBottom: 4 }} size={20} color={'#368BC1'} />}
-              boxStyles={{
-                width: 300, borderColor:'white',
-                borderRadius: 25
-              }}
-              placeholderTextColor={colors.primary}
-             
-              inputStyles={{
-                fontSize: 17, color: '#4863A0', fontFamily:"Poppins-Regular", marginTop: 2, marginLeft: 12
-              }}
-              backgroundColor='white'
-              fontFamily='Poppins-SemiBold'
-              dropdownTextStyles={{ fontSize: 20, color: "#368BC1" }}
-              dropdownStyles={{ backgroundColor: 'white' , height:150, borderColor:'white' }}
-              badgeTextStyles={{ fontfamily: 'Poppins-Regular', fontSize: 14 }}
-              badgeStyles={{ backgroundColor: '#274116' }}
-              labelStyles={{ fontSize: 2, fontFamily: 'Poppins-SemiBold' }}
-              label="Categories"
-            />
-           </View>
+            setSelected={(val) =>  setLanguage(val)}
+            data={data}
+            save="value"
+            closeicon={ <MaterialIcons  style = {{marginTop:10 ,marginLeft:7}} name="clear" size = {25} color= {'white'}></MaterialIcons>}
+            arrowicon={<Icon name="chevron-down" size={22} style={{ marginTop: 5}} color={'white'} />}
+            searchicon={<Icon name="search-outline" style={{ marginBottom: 4 }} size={20} color={'white'} />}
+            boxStyles={{
+              width: 250, borderColor:'#1F4A83',
+              borderRadius: 25 , marginTop:17 , marginLeft:18
+            }}
+            placeholderTextColor={colors.primary}
+           
+            inputStyles={{
+              fontSize: 17, color: 'white', fontFamily:"Poppins-Regular", marginTop: 2, marginLeft: 12
+            }}
+            backgroundColor='white'
+            fontFamily='Poppins-SemiBold'
+            dropdownTextStyles={{ fontSize: 15, color: "#1F4A83" }}
+            dropdownStyles={{height:120,width:250, marginLeft:20, backgroundColor: 'white' , borderColor:'white' }}
+            badgeTextStyles={{ fontfamily: 'Poppins-Regular', fontSize: 12 }}
+            badgeStyles={{ backgroundColor: '#274116' }}
+            labelStyles={{ fontSize: 2, fontFamily: 'Poppins-SemiBold' }}
+            label="Categories"
+          />
             {/* <TextField2 placeholder="Confirm Password" secureTextEntry={true} name="lock" onChangeText={setConfirmPassword} value={confirmPassword} /> */}
           
-           <View style = {{marginTop :550, marginLeft:40, position: 'absolute'}}>
-            <Btn1 btnLabel="Sign Up"  onPress={()=>SignUpAuth()}
-                           
-                        /> 
-           </View>
+            <View style = {{marginTop :540, marginLeft:80, position: 'absolute'}}>
+           
+            <TouchableOpacity style={{backgroundColor:'white', borderTopLeftRadius:100, alignItems: "center", marginLeft:180, marginTop: 40, height: 80, width: 170}} onPress={()=>SignUpAuth()}>
+            <Text style={{color: "#1F4A83", fontSize: 20, marginRight:50,  fontFamily: "Poppins-Black" , marginTop:25}}>Register</Text>
+          
+            </TouchableOpacity>
+</View>
            {/* onPress={SignUpAuth} */}
            
-        </Background2>
+      </View>
      </View>
     );
 }

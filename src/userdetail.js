@@ -89,14 +89,14 @@ export default function Userdetail({navigation}){
         <View style = {{flexDirection:'row'}}>
          <View style={{ marginTop: 2, flexDirection: 'column' }}>
 
-          <Text style={{ fontFamily: 'Poppins-SemiBold', color: '#368BC1', fontSize: 17, marginTop: 10, marginLeft: 10 }}>
+          <Text style={{ fontFamily: 'Poppins-SemiBold', color: '#1F4A83', fontSize: 17, marginTop: 10, marginLeft: 10 }}>
             Hello
           </Text>
-          <Text style={{ fontFamily: 'Poppins-SemiBold', color: '#368BC1', fontSize: 16, marginLeft: 10 }}>
+          <Text style={{ fontFamily: 'Poppins-SemiBold', color: '#1F4A83', fontSize: 16, marginLeft: 10 }}>
             Admin
           </Text>
         </View>
-        <View style = {{width:50 , height:50 ,marginLeft:150, backgroundColor:'#368BC1', borderRadius:10}}>
+        <View style = {{width:50 , height:50 ,marginLeft:150, backgroundColor:'#1F4A83', borderRadius:10}}>
          <MaterialIcons  style = {{marginTop:8 , marginLeft:10}} name="share" size = {30} color= {'white'}  onPress={()=>share()}></MaterialIcons>
         </View>
         </View>
@@ -124,30 +124,30 @@ export default function Userdetail({navigation}){
                 <View style={{ marginTop: 30, flexDirection: 'column' }}>
                     <View style={{ flexDirection: 'row' }}>
                  <Image
-				source={require('../assets/images/user4.png')}
+				source={require('../assets/images/f.png')}
 				style={styles.image}></Image>
                 <View style={{flexDirection:'column'}}>
                   <View style ={{flexDirection:'row'}}>
 
-                    <Text style={{ fontFamily: 'Poppins-SemiBold', marginTop: 5, color: '#368BC1', fontSize: 15, marginLeft: 15}}>
+                    <Text style={{ fontFamily: 'Poppins-SemiBold', marginTop: 5, color: '#1F4A83', fontSize: 15, marginLeft: 15}}>
                       {item.firstName}
                       </Text>
-                      <Text style={{ fontFamily: 'Poppins-SemiBold', marginTop: 5, color: '#368BC1', fontSize: 15, marginLeft: 5}}>
+                      <Text style={{ fontFamily: 'Poppins-SemiBold', marginTop: 5, color: '#1F4A83', fontSize: 15, marginLeft: 5}}>
                       {item.lastName}
                       </Text>
                      
                     </View>    
-                    <Text style={{ fontFamily: 'Poppins-SemiBold',  color: '#368BC1', fontSize: 15, marginLeft: 15}}>
+                    <Text style={{ fontFamily: 'Poppins-SemiBold',  color: '#1F4A83', fontSize: 15, marginLeft: 15}}>
                       {item.email}
                       </Text>    
                       </View>              
                     
                     
                    <View style ={{position:'absolute'}}>
-                     <TouchableOpacity   style={{ marginLeft:260, width: 90,height : 42 , margin: 15  ,borderRadius:12, backgroundColor:'#B21807'}}
+                     <TouchableOpacity   style={{ marginTop:28,marginLeft:280, width: 70,height : 30 , margin: 15  ,borderRadius:3, backgroundColor:'#B21807'}}
                        onPress={() => Alert.alert(
-                        "Delete Restaurant",
-                        "Are you sure you want to Delete this restaurant",
+                        "Delete User",
+                        "Are you sure you want to Delete this user",
                         [
                           {
                             text: "No",
@@ -171,7 +171,7 @@ export default function Userdetail({navigation}){
                         ]
                       )}>
                    <View style = {{flexDirection:'row'}}>
-                   <Text style ={{fontFamily:'Poppins-SemiBold',   marginLeft : 15,fontSize:18 ,marginTop : 5,color :'white'}}>
+                   <Text style ={{fontFamily:'Poppins-SemiBold',   marginLeft : 15,fontSize:12 ,marginTop : 5,color :'white'}}>
                    Delete 
                    </Text>
                   

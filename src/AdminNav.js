@@ -11,7 +11,7 @@ export default function AdminNav({navigation}){
 
     return(
         <NavigationContainer independent>
-        <Stack.Navigator initialRouteName="HomeScreen">
+        <Stack.Navigator initialRouteName = 'splashScreen'>
           
            <Stack.Screen
             name="HomeScreen"

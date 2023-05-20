@@ -7,6 +7,7 @@ import Login from './src/login';
 import Aboutus from './src/Aboutus';
 import Open from './src/open';
 import Profile from './src/Profile';
+import BlindSignup from './src/blindsignup';
 import SignUp from './src/signUp';
 import EditProfile from'./src/EditProfile'
 import Verification from './src/verification'
@@ -39,9 +40,9 @@ function Root() {
         else if (route.name === "Profile"){
           iconName = focused ? 'person' : 'person';
         }
-        return <MaterialIcons name={iconName} size = {size} color= {color}></MaterialIcons>
+        return <MaterialIcons name={iconName} size = {size} color= {'#1F4A83'}></MaterialIcons>
       },
-      tabBarActiveTintColor: colors.primary,
+      tabBarActiveTintColor: '#1F4A83',
       tabBarInactiveTintColor: colors.grey,
     })}>
   
@@ -59,6 +60,7 @@ export default function App(){
       <Stack.Navigator screenOptions={{headerShown: false}} initialRouteName = 'open'>
       <Stack.Screen name= "open" component={Open} />
       <Stack.Screen name= "splashScreen" component={Splash} />
+      <Stack.Screen name= "blindsignup" component={BlindSignup} />
       <Stack.Screen name= "SignUp" component={SignUp}/> 
       <Stack.Screen name= "AdminNav" component={AdminNav} />
       <Stack.Screen name= "Login" component={Login} />  

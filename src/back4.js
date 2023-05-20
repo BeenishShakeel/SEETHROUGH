@@ -5,7 +5,8 @@ import {View, ImageBackground, StyleSheet} from 'react-native';
 export default function Back4({children}){
    return(
     <View style = {{flex:1}}>
-        <ImageBackground source={require("../assets/images/new4.jpg")} style={styles.backgroundImage}>
+    
+        <ImageBackground source={require("../assets/images/gh.gif")} style={styles.backgroundImage}>
         </ImageBackground>
         <View>{children}</View>
     </View>

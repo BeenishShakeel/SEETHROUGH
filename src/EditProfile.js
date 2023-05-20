@@ -8,6 +8,7 @@ import Icon from "react-native-vector-icons/Ionicons";
 import { colors } from "../assets/constants/colors";
 import auth from '@react-native-firebase/auth';
 import database from '@react-native-firebase/database';
+import MaterialIcons from "react-native-vector-icons/MaterialIcons";
 import AsyncStorage from '@react-native-async-storage/async-storage';
 export default function EditProfile({navigation}){
     const [language, setLanguage] = React.useState();
@@ -38,7 +39,7 @@ export default function EditProfile({navigation}){
             var user = auth().currentUser;
                 user.updatePassword(newPassword).then(() => {
                     ToastAndroid.show("Password Updated Successfully", ToastAndroid.SHORT) 
-                    navigation.navigate("MyProfile")
+                    navigation.navigate("Profile")
                 }).catch((error) => {  ToastAndroid.show(error.message, ToastAndroid.SHORT) });
         }
         else{
@@ -50,7 +51,7 @@ export default function EditProfile({navigation}){
             ()=> {
                 ToastAndroid.show("Account Updated Successfully!", ToastAndroid.SHORT)
                 setTest(true)
-                navigation.navigate("MyProfile")
+                navigation.navigate("Profile")
             }
         ).catch((error)=> ToastAndroid.show(error.message, ToastAndroid.SHORT))
     }
@@ -86,18 +87,11 @@ export default function EditProfile({navigation}){
     
         []);
     return(
-        <View style = {{flex:1}}>
-        <Background2> 
-            <View style = {{flexDirection:'row'}}>
-            <Text style={{fontFamily: "Poppins-Bold", fontSize: 25, marginLeft:30, alignSelf:"center", marginTop :15,color:'white'}}>Update Profile</Text>
-           <View style = {{flexDirection:'column'}}>
-            <Icon name="log-out-outline" style={{ height: 50,marginTop:25, borderRadius:30, width: 50, marginLeft: 100 }}
-          size={35} color={'white'} onPress={LogOut}/>
-          <Text style = {{ marginLeft : 85 ,color:'white' , fontSize:15}}>
-            LogOut
-          </Text>
-          </View>
-          </View>
+        <View style = {{flex: 1 ,  backgroundColor:'white'}}>
+        <View style = {{backgroundColor:'#1F4A83' , height:1000 , marginTop:70, width:370, borderTopLeftRadius:80 ,borderTopRightRadius:80}}>
+        {/* color: colors.primary */}
+
+            <Text style={{fontFamily: "Poppins-SemiBold", fontSize: 30, alignSelf:"center", marginTop :30,color:'white' }}>Update Profile</Text>
             <TextField2 placeholder="First Name" name="edit"   onChangeText={setFirstName} value={firstName}  />
             <TextField2 placeholder="Last Name" name="edit"  onChangeText={setLastName} value={lastName}/>
             <TextField2 placeholder="Email" keyboardType="numeric" name="mail-outline"  onChangeText={setEmail} value={email} />
@@ -105,41 +99,45 @@ export default function EditProfile({navigation}){
             <TextField2 placeholder="Confirm Password" secureTextEntry={true} name="lock" onChangeText={setconfirmNewPassword} value={confirmNewPassword}  />
             <TextField2 placeholder="Phone Number"  name="phone"   onChangeText={setPhoneNumber} value={phoneNumber} 
             />
-          <View style = {{zIndex: 1 , marginLeft:20, marginTop:17, backgroundColor:'white' , height:55, width:300,marginLeft:20, borderRadius:22}}>
+      
             <SelectList
-              setSelected={(val) =>  setLanguage(val)}
-              data={data}
-              save="value"
-              arrowicon={<Icon name="chevron-down" size={22} style={{ marginTop: 5 }} color={colors.primary} />}
-              searchicon={<Icon name="search-outline" style={{ marginBottom: 4 }} size={20} color={'#368BC1'} />}
-              boxStyles={{
-                width: 300, borderColor:'white',
-                borderRadius: 25
-              }}
-              placeholderTextColor={colors.primary}
-             
-              inputStyles={{
-                fontSize: 17, color: '#4863A0', fontFamily:"Poppins-Regular", marginTop: 2, marginLeft: 12
-              }}
-              backgroundColor='white'
-              fontFamily='Poppins-SemiBold'
-              dropdownTextStyles={{ fontSize: 20, color: "#368BC1" }}
-              dropdownStyles={{height:150, backgroundColor: 'white' , borderColor:'white' }}
-              badgeTextStyles={{ fontfamily: 'Poppins-Regular', fontSize: 14 }}
-              badgeStyles={{ backgroundColor: '#274116' }}
-              labelStyles={{ fontSize: 2, fontFamily: 'Poppins-SemiBold' }}
-              label="Categories"
-            />
-           </View>
+            setSelected={(val) =>  setLanguage(val)}
+            data={data}
+            save="value"
+            closeicon={ <MaterialIcons  style = {{marginTop:10 ,marginLeft:7}} name="clear" size = {25} color= {'white'}></MaterialIcons>}
+            arrowicon={<Icon name="chevron-down" size={22} style={{ marginTop: 5}} color={'white'} />}
+            searchicon={<Icon name="search-outline" style={{ marginBottom: 4 }} size={20} color={'white'} />}
+            boxStyles={{
+              width: 250, borderColor:'#1F4A83',
+              borderRadius: 25 , marginTop:17 , marginLeft:18
+            }}
+            placeholderTextColor={colors.primary}
+           
+            inputStyles={{
+              fontSize: 17, color: 'white', fontFamily:"Poppins-Regular", marginTop: 2, marginLeft: 12
+            }}
+            backgroundColor='white'
+            fontFamily='Poppins-SemiBold'
+            dropdownTextStyles={{ fontSize: 15, color: "#1F4A83" }}
+            dropdownStyles={{height:120,width:250, marginLeft:20, backgroundColor: 'white' , borderColor:'white' }}
+            badgeTextStyles={{ fontfamily: 'Poppins-Regular', fontSize: 12 }}
+            badgeStyles={{ backgroundColor: '#274116' }}
+            labelStyles={{ fontSize: 2, fontFamily: 'Poppins-SemiBold' }}
+            label="Categories"
+          />
             {/* <TextField2 placeholder="Confirm Password" secureTextEntry={true} name="lock" onChangeText={setConfirmPassword} value={confirmPassword} /> */}
           
-           <View style = {{marginTop :550, marginLeft:40, position: 'absolute'}}>
-            <Btn1 btnLabel="Update"   onPress={UpdateAddress}                         
-                        /> 
-           </View>
+            <View style = {{marginTop :500, marginLeft:100, position: 'absolute'}}>
+           
+            <TouchableOpacity style={{backgroundColor:'white', borderTopLeftRadius:100, alignItems: "center", marginLeft:180, marginTop: 40, height: 80, width: 170}} onPress={UpdateAddress}>
+            <Text style={{color: "#1F4A83", fontSize: 18, marginRight:70,  fontFamily: "Poppins-ExtraBold" , marginTop:25}}>Update</Text>
           
-        </Background2>
-        </View>
+            </TouchableOpacity>
+</View>
+           {/* onPress={SignUpAuth} */}
+           
+      </View>
+     </View>
     );
 }
 const styles = StyleSheet.create({
