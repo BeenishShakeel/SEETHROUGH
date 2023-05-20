@@ -1,0 +1,47 @@
+{
+  "project_info": {
+    "project_number": "573650557123",
+    "project_id": "seethroughmyeyes-47b93",
+    "storage_bucket": "seethroughmyeyes-47b93.appspot.com"
+  },
+  "client": [
+    {
+      "client_info": {
+        "mobilesdk_app_id": "1:573650557123:android:5da7357642d3c30d896a76",
+        "android_client_info": {
+          "package_name": "com.seethroughmyeyes"
+        }
+      },
+      "oauth_client": [
+        {
+          "client_id": "573650557123-v1773l191abosgb52rm2jmi3bjavu5h7.apps.googleusercontent.com",
+          "client_type": 1,
+          "android_info": {
+            "package_name": "com.seethroughmyeyes",
+            "certificate_hash": "5e8f16062ea3cd2c4a0d547876baa6f38cabf625"
+          }
+        },
+        {
+          "client_id": "573650557123-o5khrd79p7vjru2e7up7dov5ktpbs1mb.apps.googleusercontent.com",
+          "client_type": 3
+        }
+      ],
+      "api_key": [
+        {
+          "current_key": "AIzaSyB_0K_6gRTexwtROso9QHdukaOsx8gQL6Q"
+        }
+      ],
+      "services": {
+        "appinvite_service": {
+          "other_platform_oauth_client": [
+            {
+              "client_id": "573650557123-o5khrd79p7vjru2e7up7dov5ktpbs1mb.apps.googleusercontent.com",
+              "client_type": 3
+            }
+          ]
+        }
+      }
+    }
+  ],
+  "configuration_version": "1"
+}
