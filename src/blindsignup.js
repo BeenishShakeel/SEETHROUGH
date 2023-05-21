@@ -82,7 +82,7 @@ export default function BlindSignup({navigation}){
     } catch (error) {
       console.log("error raised", error)
     }
-    stopRecording();
+    //stopRecording();
     console.log("stop")
   }
   const stopRecording = async () => {
