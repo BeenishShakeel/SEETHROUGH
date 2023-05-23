@@ -1,17 +1,7 @@
 import React, { useState, useEffect } from "react";
 import { View, Text, StyleSheet, ImageBackground, Image, ToastAndroid, Pressable, FlatList } from "react-native";
-import Background from "./background";
-import MaterialIcons from "react-native-vector-icons/MaterialIcons";
-import MaterialCommunityIcons from "react-native-vector-icons/MaterialCommunityIcons";
-import Btn1 from "../assets/buttons/btn1";
-import Back4 from "./back4";
-import TextField from "./textField";
-import { Gif } from 'react-native-gif'
-import Icon from "react-native-vector-icons/Ionicons";
 import { useIsFocused } from "@react-navigation/native";
-import { colors } from "../assets/constants/colors";
 import Sound from 'react-native-sound';
-import * as Animatable from 'react-native-animatable';
 import Voice from '@react-native-voice/voice';
 import axios, { all } from "axios";
 import Tts from 'react-native-tts';
@@ -21,13 +11,9 @@ import database from '@react-native-firebase/database';
 import AsyncStorage from '@react-native-async-storage/async-storage';
 //import Contacts from 'react-native-contacts';
 //import {Contact} from '.';
-const projectId = 'voicebot-387211';
-const agentId = '881a6865-855f-4014-aabd-23513a3ff494';
-const languageCode = 'en'
-const location = 'us-central1'
-const sessionId = Math.random().toString(36).substring(7);
+
 function detectIntentText(query, lat, long) {
-  axios.post("http://192.168.10.4:8000/get-response", { query: query, location: { latitude: lat, longitude: long } })
+  axios.post("http://52.220.22.206:3000/get-response", { query: query, location: { latitude: lat, longitude: long } })
     .then(response => {
       console.log("lat:", lat)
       console.log("long:", long)
@@ -40,8 +26,8 @@ function detectIntentText(query, lat, long) {
 }
 
 export default function Open({ navigation }) {
-  const [lat, setLat] = useState();
-  const [long, setLong] = useState();
+  const [lat, setLat] = useState(33.6281161);
+  const [long, setLong] = useState(73.0891633);
   const [lang, setlang] = useState("")
   const [result, setResult] = useState("")
   const [starttext, setstarttext] = useState("To start videocall speak videocall")
@@ -80,7 +66,12 @@ export default function Open({ navigation }) {
   const onSpeechResultsHandler = (e) => {
     console.log(e);
     if (e.value.length > 0) {
-      detectIntentText(e.value[0], lat, long);
+      if(e.value[0].includes("call")) {
+        navigation.navigate("Video");
+      }
+      else {
+        detectIntentText(e.value[0], lat, long);
+      }
     }
   }
   const requestLocationPermission = async () => {

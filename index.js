@@ -11,18 +11,11 @@ import invokeApp from 'react-native-invoke-app';
 
 AppRegistry.registerComponent(appName, () => App);
 
-const sleep = (time) => new Promise((resolve) => setTimeout(() => resolve(), time));
-
-const veryIntensiveTask = async (taskDataArguments) => {
-    const { delay } = taskDataArguments;
-    await new Promise( async (resolve) => {
+const veryIntensiveTask = async () => {
+    await new Promise( async () => {
         RNShake.addListener(() => {
             invokeApp();
         });
-        for (let i = 0; BackgroundService.isRunning(); i++) {
-            console.log(i);
-            await sleep(delay);
-        }
     });
 };
 
