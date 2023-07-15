@@ -11,6 +11,10 @@ import com.facebook.soloader.SoLoader;
 import java.util.List;
 import com.twiliorn.library.TwilioPackage;
 import com.wenkesj.voice.VoicePackage;
+import com.rt2zz.reactnativecontacts.ReactNativeContacts;
+import com.github.wumke.RNImmediatePhoneCall.RNImmediatePhoneCallPackage;
+
+
 
 public class MainApplication extends Application implements ReactApplication {
 
@@ -28,6 +32,7 @@ public class MainApplication extends Application implements ReactApplication {
           // Packages that cannot be autolinked yet can be added manually here, for example:
           // packages.add(new MyReactNativePackage());
           packages.add(new TwilioPackage());
+          //packages.add(new ReactNativeContacts());
           return packages;
         }
 

@@ -9,15 +9,20 @@ import { PermissionsAndroid } from 'react-native';
 import Geolocation from 'react-native-geolocation-service';
 import database from '@react-native-firebase/database';
 import AsyncStorage from '@react-native-async-storage/async-storage';
+import Contacts from 'react-native-contacts';
+import RNImmediatePhoneCall from 'react-native-immediate-phone-call';
+
+//export default ContactsList;
+//export {Contact};
 //import Contacts from 'react-native-contacts';
 //import {Contact} from '.';
 
 function detectIntentText(query, lat, long) {
-  axios.post("http://52.220.22.206:3000/get-response", { query: query, location: { latitude: lat, longitude: long } })
+  axios.post("http://192.168.10.21:8000/get-response", { query: query, location: { latitude: lat, longitude: long } })
     .then(response => {
       console.log("lat:", lat)
       console.log("long:", long)
-      console.log(response.data);
+      console.log("res: ", response.data);
       if (response.data) {
         Tts.speak(response.data.responses[0].text.text[0]);
       }
@@ -26,23 +31,21 @@ function detectIntentText(query, lat, long) {
 }
 
 export default function Open({ navigation }) {
-  const [lat, setLat] = useState(33.6281161);
-  const [long, setLong] = useState(73.0891633);
+  const [lat, setLat] = useState(33.6500104);
+  const [long, setLong] = useState(73.1556531);
   const [lang, setlang] = useState("")
   const [result, setResult] = useState("")
   const [starttext, setstarttext] = useState("To start videocall speak videocall")
   const [audioData, setAudioData] = useState(null);
-  //const [contacts, setContacts] = useState([]);
+  const [contacts, setContacts] = useState([]);
+
   const isFocused = useIsFocused();
   useEffect(() => {
     if (isFocused) {
       console.log("called");
       getUserId()
     }
-  //   Contacts.getAll().then(contacts => {
-  //      console.log(contacts);
-  //      setContacts(contacts);
-  //  });
+
     Voice.onSpeechStart = onSpeechStartHandler;
     Voice.onSpeechEnd = onSpeechEndHandler;
     Voice.onSpeechResults = onSpeechResultsHandler;
@@ -50,6 +53,11 @@ export default function Open({ navigation }) {
     if (hasLocationPermission) {
       getLocation();
     }
+
+    Contacts.getAll().then(contacts => {
+      setContacts(contacts);
+    });
+
     return () => {
       Voice.destroy().then(Voice.removeAllListeners);
     }
@@ -66,8 +74,17 @@ export default function Open({ navigation }) {
   const onSpeechResultsHandler = (e) => {
     console.log(e);
     if (e.value.length > 0) {
-      if(e.value[0].includes("call")) {
-        navigation.navigate("Video");
+      if (e.value[0].includes("call")) {
+        let name = e.value[0].substring(5);
+        console.log("Name: ", name);
+        let contact = contacts.find((contact) => {
+          let c = contact?.givenName.toLowerCase()//.indexOf(name.toLowerCase()) != -1;
+          return c.indexOf(name.toLowerCase()) != -1;
+        })
+        console.log(contact);
+        if (contact) {
+          RNImmediatePhoneCall.immediatePhoneCall(contact.phoneNumbers[0].number);
+        }
       }
       else {
         detectIntentText(e.value[0], lat, long);
@@ -209,7 +226,7 @@ export default function Open({ navigation }) {
   //          <Icon name="arrow-forward-outline" style={{ marginTop: 30 }} marginLeft={280} size={45} color={'#368BC1'} onPress={() => navigation.navigate('splashScreen')} />
   //       </Animatable.View>
   return (
-    <View style={{flex:1}}> 
+    <View style={{ flex: 1 }}>
       <Pressable onPress={() => { Voice.start() }}>
         <Image source={require("../assets/images/gh.gif")} style={styles.backgroundImage}
         />

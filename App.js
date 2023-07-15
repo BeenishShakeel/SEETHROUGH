@@ -19,6 +19,9 @@ const Tab = createBottomTabNavigator();
 const Stack = createStackNavigator();
 import SplashScreen from './screens/splashscreen';
 import Video from './screens/video';
+import ContactsList from './src/ContactList';
+import Contact from './src/Contact';
+
 function Root() {
   return (
     <Tab.Navigator screenOptions={({route})=> ({
@@ -68,6 +71,8 @@ export default function App(){
       <Stack.Screen name= "EditProfile" component={EditProfile} /> 
       <Stack.Screen name= "Root" component={Root}/> 
       <Stack.Screen name='Video' component={Video}></Stack.Screen>
+      <Stack.Screen name='ContactList' component={ContactsList}></Stack.Screen>
+      <Stack.Screen name='Contact' component={Contact}></Stack.Screen>
       </Stack.Navigator>
      </NavigationContainer>
    

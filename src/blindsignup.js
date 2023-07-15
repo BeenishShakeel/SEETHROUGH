@@ -1,25 +1,25 @@
 import React, {useState,  useEffect} from "react";
 import {View, Text, StyleSheet ,ImageBackground, Image ,ToastAndroid} from "react-native";
-import Background from "./background";
-import MaterialIcons from "react-native-vector-icons/MaterialIcons";
-import MaterialCommunityIcons from "react-native-vector-icons/MaterialCommunityIcons";
-import Btn1 from "../assets/buttons/btn1";
+//import Background from "./background";
+//import MaterialIcons from "react-native-vector-icons/MaterialIcons";
+//import MaterialCommunityIcons from "react-native-vector-icons/MaterialCommunityIcons";
+//import Btn1 from "../assets/buttons/btn1";
 import Back4  from "./back4";
-import axios from 'axios';
+//import axios from 'axios';
 
-import TextField from "./textField";
-import Icon from "react-native-vector-icons/Ionicons";
-import { colors } from "../assets/constants/colors";
-import * as Animatable from 'react-native-animatable';
+// import TextField from "./textField";
+// import Icon from "react-native-vector-icons/Ionicons";
+// import { colors } from "../assets/constants/colors";
+// import * as Animatable from 'react-native-animatable';
 import Sound from 'react-native-sound';
-import { io } from "socket.io-client";
+//import { io } from "socket.io-client";
 import AsyncStorage from '@react-native-async-storage/async-storage';
 import Voice from '@react-native-voice/voice';
-import auth from '@react-native-firebase/auth';
+//import auth from '@react-native-firebase/auth';
 import database from '@react-native-firebase/database';
 import Tts from 'react-native-tts';
-import { Button } from "react-native-paper";
-import { useAnimatedGestureHandler } from "react-native-reanimated";
+//import { Button } from "react-native-paper";
+//import { useAnimatedGestureHandler } from "react-native-reanimated";
 
 export default function BlindSignup({navigation}){
     const [hasRun, setHasRun] = useState(false);
@@ -243,10 +243,5 @@ const sound3 = new Sound(require('./1.mp3'),
   //   await AsyncStorage.setItem("uid", id)
   // })
     return(
-
-        <Back4>
-
-       
-        
-  </Back4>
+        <Back4></Back4>
     )}

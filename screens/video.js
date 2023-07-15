@@ -20,7 +20,7 @@ const Video = ({navigation}) => {
   const [status, setStatus] = useState('disconnected');
   const [participants, setParticipants] = useState(new Map());
   const [videoTracks, setVideoTracks] = useState(new Map());
-  const [token, setToken] = useState('eyJ0eXAiOiJKV1QiLCJhbGciOiJIUzI1NiIsImN0eSI6InR3aWxpby1mcGE7dj0xIn0.eyJqdGkiOiJTSzRmMTk0ZWViMTI3OWYwMjg0ZmY3MTk4Y2Y2NGIwYzU4LTE2ODQ4NTQ0NDUiLCJpc3MiOiJTSzRmMTk0ZWViMTI3OWYwMjg0ZmY3MTk4Y2Y2NGIwYzU4Iiwic3ViIjoiQUNlNjYwNjE2MjBkZjczYjk0MjQ1MWVmZTA3Yzc2OTA0ZiIsImV4cCI6MTY4NDg1ODA0NSwiZ3JhbnRzIjp7ImlkZW50aXR5IjoiYmVlbmlzaCBzaGFrZWVsIiwidmlkZW8iOnt9fX0.gV2OakMaN7Q04gEsxhkcLbCLOtzH3M5I3-owB7EJRyU');
+  const [token, setToken] = useState('eyJ0eXAiOiJKV1QiLCJhbGciOiJIUzI1NiIsImN0eSI6InR3aWxpby1mcGE7dj0xIn0.eyJqdGkiOiJTSzRmMTk0ZWViMTI3OWYwMjg0ZmY3MTk4Y2Y2NGIwYzU4LTE2ODQ5MTg5MzkiLCJpc3MiOiJTSzRmMTk0ZWViMTI3OWYwMjg0ZmY3MTk4Y2Y2NGIwYzU4Iiwic3ViIjoiQUNlNjYwNjE2MjBkZjczYjk0MjQ1MWVmZTA3Yzc2OTA0ZiIsImV4cCI6MTY4NDkyMjUzOSwiZ3JhbnRzIjp7ImlkZW50aXR5IjoiYmVlbmlzaCIsInZpZGVvIjp7InJvb20iOiJ0cmlhbCJ9fX0.LOUf0qky_gatxTdo1HqeYxqqhnsH0XV3lhy5mlF2Jvs ');
   const twilioRef = useRef(null);
 
   const _onConnectButtonPress = () => {
