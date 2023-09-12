@@ -86,6 +86,9 @@ export default function Open({ navigation }) {
           RNImmediatePhoneCall.immediatePhoneCall(contact.phoneNumbers[0].number);
         }
       }
+      else if(e.value[0].includes("voice")) {
+        navigation.navigate("voiceOperations")
+      }
       else {
         detectIntentText(e.value[0], lat, long);
       }

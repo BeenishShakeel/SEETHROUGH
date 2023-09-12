@@ -21,6 +21,7 @@ import SplashScreen from './screens/splashscreen';
 import Video from './screens/video';
 import ContactsList from './src/ContactList';
 import Contact from './src/Contact';
+import VoiceOperations from "./src/Clock"
 
 function Root() {
   return (
@@ -62,6 +63,7 @@ export default function App(){
     <NavigationContainer>
       <Stack.Navigator screenOptions={{headerShown: false}} initialRouteName = 'open'>
       <Stack.Screen name= "open" component={Open} />
+      <Stack.Screen name= "voiceOperations" component={VoiceOperations} />
       <Stack.Screen name= "splashScreen" component={Splash} />
       <Stack.Screen name= "blindsignup" component={BlindSignup} />
       <Stack.Screen name= "SignUp" component={SignUp}/> 
