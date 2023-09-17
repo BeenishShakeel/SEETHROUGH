@@ -11,6 +11,7 @@ import database from '@react-native-firebase/database';
 import AsyncStorage from '@react-native-async-storage/async-storage';
 import Contacts from 'react-native-contacts';
 import RNImmediatePhoneCall from 'react-native-immediate-phone-call';
+import {distance, closest} from 'fastest-levenshtein';
 
 //export default ContactsList;
 //export {Contact};
@@ -77,10 +78,15 @@ export default function Open({ navigation }) {
       if (e.value[0].includes("call")) {
         let name = e.value[0].substring(5);
         console.log("Name: ", name);
-        let contact = contacts.find((contact) => {
-          let c = contact?.givenName.toLowerCase()//.indexOf(name.toLowerCase()) != -1;
-          return c.indexOf(name.toLowerCase()) != -1;
-        })
+
+        let distances = contacts.map(contact => {
+          let c = contact?.givenName;
+          return distance(name, c);
+        });
+      
+        let min = Math.min(...distances);
+        console.log("min", min)
+        let contact = contacts[distances.indexOf(min)];
         console.log(contact);
         if (contact) {
           RNImmediatePhoneCall.immediatePhoneCall(contact.phoneNumbers[0].number);
