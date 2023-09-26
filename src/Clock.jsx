@@ -178,6 +178,7 @@ export default class VoiceOperations extends Component {
           activeTab: "timer"
         })
       }
+      
     }
 
     if (this.state.isStopwatchRunning) {
