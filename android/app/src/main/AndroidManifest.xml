@@ -13,8 +13,8 @@
     <uses-feature android:name="android.hardware.camera" android:required="false" />
     <uses-feature android:name="android.hardware.camera.autofocus" android:required="false" />
     <uses-feature android:name="android.hardware.microphone" android:required="false" />
-    
-
+    <uses-permission android:name="android.permission.ACCESS_FINE_LOCATION"/>
+    <uses-permission android:name="android.permission.ACCESS_COARSE_LOCATION"/>
     <application
       android:name=".MainApplication"
       android:label="@string/app_name"
@@ -40,6 +40,9 @@
           <data android:scheme="helpify" />
         </intent-filter>
       </activity>
+      <meta-data
+      android:name="com.google.android.geo.API_KEY"
+      android:value="AIzaSyCegqOj7WvbQNmV-RUxMWP4d7xnK8jWELc"/>
       <service android:name="com.asterinet.react.bgactions.RNBackgroundActionsTask" />
     </application>
 </manifest>

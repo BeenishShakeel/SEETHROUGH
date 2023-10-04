@@ -1,4 +1,4 @@
-import React, { Component, useRef , useState} from 'react';
+import React, { Component, useRef , useState, useEffect} from 'react';
 import {
   TwilioVideoLocalView,
   TwilioVideoParticipantView,
@@ -12,6 +12,7 @@ import{
     TextInput,
     Button
     } from 'react-native';
+import Tts from 'react-native-tts';
 
 const Video = ({navigation}) => {
   const [isAudioEnabled, setIsAudioEnabled] = useState(true);
@@ -19,7 +20,7 @@ const Video = ({navigation}) => {
   const [status, setStatus] = useState('disconnected');
   const [participants, setParticipants] = useState(new Map());
   const [videoTracks, setVideoTracks] = useState(new Map());
-  const [token, setToken] = useState('eyJ0eXAiOiJKV1QiLCJhbGciOiJIUzI1NiIsImN0eSI6InR3aWxpby1mcGE7dj0xIn0.eyJqdGkiOiJTS2Y1MThkMmY4MTk5MWY2NTY2NDFiMDAyYzY3MzQ5MmY4LTE2NzYzODAwMjIiLCJpc3MiOiJTS2Y1MThkMmY4MTk5MWY2NTY2NDFiMDAyYzY3MzQ5MmY4Iiwic3ViIjoiQUM2YjNmZDNkMGIyYzMyMGNmNTFkNGUxYjBhNTAxOTcyZiIsImV4cCI6MTY3NjM4MzYyMiwiZ3JhbnRzIjp7ImlkZW50aXR5IjoiQmVlbmlzaCBTaGFrZWVsIiwidmlkZW8iOnsicm9vbSI6IkJ1bnR5LVNoYWtlZWwifX19._a-0Z4uH2_hNAATdx6hK1RBIJ27XP0kkLZNCxCZKt-c');
+  const [token, setToken] = useState('eyJ0eXAiOiJKV1QiLCJhbGciOiJIUzI1NiIsImN0eSI6InR3aWxpby1mcGE7dj0xIn0.eyJqdGkiOiJTSzRmMTk0ZWViMTI3OWYwMjg0ZmY3MTk4Y2Y2NGIwYzU4LTE2ODQ4NTQ0NDUiLCJpc3MiOiJTSzRmMTk0ZWViMTI3OWYwMjg0ZmY3MTk4Y2Y2NGIwYzU4Iiwic3ViIjoiQUNlNjYwNjE2MjBkZjczYjk0MjQ1MWVmZTA3Yzc2OTA0ZiIsImV4cCI6MTY4NDg1ODA0NSwiZ3JhbnRzIjp7ImlkZW50aXR5IjoiYmVlbmlzaCBzaGFrZWVsIiwidmlkZW8iOnt9fX0.gV2OakMaN7Q04gEsxhkcLbCLOtzH3M5I3-owB7EJRyU');
   const twilioRef = useRef(null);
 
   const _onConnectButtonPress = () => {
@@ -43,20 +44,24 @@ const Video = ({navigation}) => {
 
   const _onRoomDidConnect = ({roomName, error}) => {
     console.log('onRoomDidConnect: ', roomName);
-
+    Tts.speak('Room connected successfully')
     setStatus('connected');
   };
 
   const _onRoomDidDisconnect = ({ roomName, error }) => {
     console.log('[Disconnect]ERROR: ', error);
 
-    setStatus('disconnected');
+    //setStatus('disconnected');
+    Tts.speak('Room disconnected');
+    navigation.goBack();
   };
 
   const _onRoomDidFailToConnect = error => {
     console.log('[FailToConnect]ERROR: ', error);
 
-    setStatus('disconnected');
+    //setStatus('disconnected');
+    Tts.speak('Room disconnected');
+    navigation.goBack();
   };
 
   const _onParticipantAddedVideoTrack = ({ participant, track }) => {
@@ -81,6 +86,9 @@ const Video = ({navigation}) => {
 
     setVideoTracks(videoTracksLocal);
   };
+  useEffect(()=>{
+    _onConnectButtonPress();
+  },[])
 
   return (
     <View style={styles.container}>
@@ -162,7 +170,8 @@ const Video = ({navigation}) => {
 const styles = StyleSheet.create({
     container: {
       flex: 1,
-      backgroundColor: "white"
+      backgroundColor: "white",
+      color: "black"
     },
     callContainer: {
       flex: 1,
@@ -170,12 +179,14 @@ const styles = StyleSheet.create({
       bottom: 0,
       top: 0,
       left: 0,
-      right: 0
+      right: 0,
+      color: "black"
     },
     welcome: {
       fontSize: 30,
       textAlign: "center",
-      paddingTop: 40
+      paddingTop: 40,
+      color: "black"
     },
     input: {
       height: 50,
@@ -184,10 +195,12 @@ const styles = StyleSheet.create({
       marginLeft: 70,
       marginTop: 50,
       textAlign: "center",
-      backgroundColor: "white"
+      backgroundColor: "white",
+      color: "black"
     },
     button: {
-      marginTop: 100
+      marginTop: 100,
+      color: "black"
     },
     localVideo: {
       flex: 1,
@@ -197,16 +210,19 @@ const styles = StyleSheet.create({
       right: 10,
       bottom: 400,
       borderRadius: 2,
-      borderColor: '#4e4e4e'
+      borderColor: '#4e4e4e',
+      color: "black"
     },
     remoteGrid: {
       flex: 1,
       flexDirection: "row",
-      flexWrap: "wrap"
+      flexWrap: "wrap",
+      color: "black"
     },
     remoteVideo: {
       width: '100%',
-      height: '100%'
+      height: '100%',
+      color: "black"
     },
     optionsContainer: {
       position: "absolute",
@@ -214,10 +230,11 @@ const styles = StyleSheet.create({
       bottom: 0,
       right: 0,
       height: 100,
-      // backgroundColor: "blue",
+      backgroundColor: "blue",
       flexDirection: "row",
       alignItems: "center",
-      justifyContent: 'center'
+      justifyContent: 'center',
+      color: "black"
     },
     optionButton: {
       width: 60,
@@ -227,7 +244,8 @@ const styles = StyleSheet.create({
       borderRadius: 100 / 2,
       backgroundColor: "grey",
       justifyContent: "center",
-      alignItems: "center"
+      alignItems: "center",
+      color: "black"
     }
   });
   

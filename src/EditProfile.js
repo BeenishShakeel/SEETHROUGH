@@ -10,6 +10,7 @@ import auth from '@react-native-firebase/auth';
 import database from '@react-native-firebase/database';
 import MaterialIcons from "react-native-vector-icons/MaterialIcons";
 import AsyncStorage from '@react-native-async-storage/async-storage';
+import firestore from '@react-native-firebase/firestore';
 export default function EditProfile({navigation}){
     const [language, setLanguage] = React.useState();
     const data = [
@@ -33,8 +34,43 @@ export default function EditProfile({navigation}){
           navigation.navigate("Login")
         });
       }
+     
+
+async function UpdateAddress() {
+  if (newPassword === confirmNewPassword) {
+    try {
+      const user = auth().currentUser;
+      await user.updatePassword(newPassword);
+
+      ToastAndroid.show("Password Updated Successfully", ToastAndroid.SHORT);
+      navigation.navigate("Profile");
+    } catch (error) {
+      ToastAndroid.show(error.message, ToastAndroid.SHORT);
+    }
+  } else {
+    ToastAndroid.show("Passwords do not match!", ToastAndroid.SHORT);
+  }
+
+  // Update the user's data in Firestore
+  try {
+    await firestore().collection('users').doc(userId).update({
+      firstName: firstName,
+      lastName: lastName,
+      email: email,
+      phoneNumber: phoneNumber,
+      language: language,
+    });
+
+    ToastAndroid.show("Account Updated Successfully!", ToastAndroid.SHORT);
+    setTest(true);
+    navigation.navigate("Profile");
+  } catch (error) {
+    ToastAndroid.show(error.message, ToastAndroid.SHORT);
+  }
+}
+
   
-      function UpdateAddress(){
+  /*    function UpdateAddress(){
         if(newPassword===confirmNewPassword){
             var user = auth().currentUser;
                 user.updatePassword(newPassword).then(() => {
@@ -54,9 +90,45 @@ export default function EditProfile({navigation}){
                 navigation.navigate("Profile")
             }
         ).catch((error)=> ToastAndroid.show(error.message, ToastAndroid.SHORT))
-    }
+    }*/
+   
 
     async function fetchData() {
+      try {
+        const value = await AsyncStorage.getItem("uid");
+    
+        if (value !== null) {
+          setUserId(value);
+    
+          // Use Firestore to fetch user data based on the user's UID
+          firestore()
+            .collection('users')
+            .doc(value)
+            .get()
+            .then((documentSnapshot) => {
+              if (documentSnapshot.exists) {
+                const userData = documentSnapshot.data();
+    
+                if (userData) {
+                  const { firstName, lastName, email, language, phoneNumber } = userData;
+                  setFirstName(firstName);
+                  setLastName(lastName);
+                  setEmail(email);
+                  setPhoneNumber(phoneNumber);
+                  setLanguage(language);
+                }
+              }
+            })
+            .catch((error) => {
+              console.log(error);
+            });
+        }
+      } catch (error) {
+        console.log(error);
+      }
+    }
+    
+   /* async function fetchData() {
         try {
           const value = await AsyncStorage.getItem("uid")
           if (value !== null) {
@@ -78,7 +150,7 @@ export default function EditProfile({navigation}){
         catch (error) {
           console.log(error)
         }
-      }
+      }*/
     
       useEffect(() => {
     

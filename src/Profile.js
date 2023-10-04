@@ -14,14 +14,16 @@ import auth from '@react-native-firebase/auth';
 import database from '@react-native-firebase/database';
 //import { ImageBackground } from "react-native/Libraries/Image/Image";
 
+import firestore from '@react-native-firebase/firestore';
 
 export default function Profile({navigation}){
   const [name, setName] = useState("")
   const [email, setemail] = useState("")
   const [userId, setUserId] =useState("")
   const [phoneNumber, setphonenumber] = useState("")
+  const[rating,setrating] = useState(0.0);
   
-  async function fetchData() {
+  /*async function fetchData() {
     try {
       const value = await AsyncStorage.getItem("uid")
       if (value !== null) {
@@ -38,7 +40,42 @@ export default function Profile({navigation}){
     catch (error) {
       console.log(error)
     }
+  }*/
+
+
+async function fetchData() {
+  try {
+    const value = await AsyncStorage.getItem("uid");
+    if (value !== null) {
+      // Use Firestore to fetch user data based on the user's UID
+      firestore()
+        .collection('users')
+        .doc(value)
+        .get()
+        .then((documentSnapshot) => {
+          if (documentSnapshot.exists) {
+            const userData = documentSnapshot.data();
+
+            if (userData) {
+              const { firstName, lastName, email, phoneNumber , rating } = userData;
+              const name = firstName + ' ' + lastName;
+              const formattedRating = parseFloat(rating).toFixed(1);
+              setName(name);
+              setemail(email);
+              setphonenumber(phoneNumber);
+              setrating(formattedRating);
+            }
+          }
+        })
+        .catch((error) => {
+          console.log(error);
+        });
+    }
+  } catch (error) {
+    console.log(error);
   }
+}
+
 
   useEffect(() => {
 
@@ -54,7 +91,7 @@ export default function Profile({navigation}){
       });
     }
 
-    async  function deleteaccount(){
+   /* async  function deleteaccount(){
       const value = await AsyncStorage.getItem("uid")
       if (value !== null)
       setUserId(value);
@@ -69,7 +106,28 @@ export default function Profile({navigation}){
       ).catch((error)=> ToastAndroid.show(error.message, ToastAndroid.SHORT))
       await AsyncStorage.removeItem(value)
       ToastAndroid.show("Deleted  Successfully!", ToastAndroid.SHORT)
+  } */
+  
+
+async function deleteaccount() {
+  const value = await AsyncStorage.getItem("uid");
+
+  if (value !== null) {
+    try {
+      // Use Firestore to delete the user's document based on their UID
+      await firestore().collection('users').doc(value).delete();
+
+      // Remove the UID from AsyncStorage
+      await AsyncStorage.removeItem("uid");
+
+      ToastAndroid.show("Deleted Successfully!", ToastAndroid.SHORT);
+      navigation.navigate("Login");
+    } catch (error) {
+      ToastAndroid.show(error.message, ToastAndroid.SHORT);
+    }
   }
+}
+
 
  // <ImageBackground
           // source={require('../assets/images/new4.jpg')}
@@ -108,9 +166,13 @@ export default function Profile({navigation}){
        source={require('../assets/images/pro.png')}
       style ={styles.image1}></Image>
       </View>
-          <Text style={{  fontFamily: 'Poppins-BoldItalic', color: 'white',  marginLeft: 120, fontSize: 24 }}>
+          <Text style={{  fontFamily: 'Poppins-BoldItalic', color: 'white',  marginLeft: 125, fontSize: 24 }}>
           My Profile
         </Text>
+        <Text style={{  fontFamily: 'Poppins-BoldItalic', color: 'white',  marginLeft: 140, fontSize: 15 }}>
+        Rating : {rating}
+      </Text>
+
        
   
       

@@ -6,6 +6,7 @@ import MaterialCommunityIcons from "react-native-vector-icons/MaterialCommunityI
 import Btn1 from "../assets/buttons/btn1";
 import Back4  from "./back4";
 import axios from 'axios';
+import firestore from '@react-native-firebase/firestore';
 
 import TextField from "./textField";
 import Icon from "react-native-vector-icons/Ionicons";
@@ -203,28 +204,62 @@ const sound3 = new Sound(require('./1.mp3'),
   }
 }
 }
-  async function setinfo()
-  {
-    const random1 = Math.random().toString(36).substring(2, 7);
-    const random2 = Math.random().toString(36).substring(2, 7);
-    const userId = `${random1}-${random2}`;
-        setid(userId);
-        const language1= await AsyncStorage.getItem('language');
-        const phone= await AsyncStorage.getItem('phonenumber');
-        console.log(id)
-        console.log(phone)
-        console.log(language1)
-    database().ref(`/blind/${userId}`).
- set({phonenumber:phone, language:language1 }).
- then(
-     ()=> {
-         ToastAndroid.show("Account Updated Successfully!", ToastAndroid.SHORT)
-          setUserId(userId);
-         setTest(true)
-         navigation.navigate("MyProfile")
-     }
- ).catch((error)=> ToastAndroid.show(error.message, ToastAndroid.SHORT))
+
+
+
+
+async function setinfo() {
+  const random1 = Math.random().toString(36).substring(2, 7);
+  const random2 = Math.random().toString(36).substring(2, 7);
+  const userId = `${random1}-${random2}`;
+
+  try {
+    const language1 = await AsyncStorage.getItem('language');
+    const phone = await AsyncStorage.getItem('phonenumber');
+    console.log(userId);
+    console.log(phone);
+    console.log(language1);
+
+    // Create a reference to the Firestore collection and set the data
+    const userRef = firestore().collection('blind').doc(userId);
+
+    await userRef.set({
+      phonenumber: phone,
+      language: language1,
+    });
+
+    ToastAndroid.show("Account Updated Successfully!", ToastAndroid.SHORT);
+
+    setUserId(userId);
+    setTest(true);
+    navigation.navigate("MyProfile");
+  } catch (error) {
+    ToastAndroid.show(error.message, ToastAndroid.SHORT);
   }
+}
+
+//   async function setinfo()
+//   {
+//     const random1 = Math.random().toString(36).substring(2, 7);
+//     const random2 = Math.random().toString(36).substring(2, 7);
+//     const userId = `${random1}-${random2}`;
+//         setid(userId);
+//         const language1= await AsyncStorage.getItem('language');
+//         const phone= await AsyncStorage.getItem('phonenumber');
+//         console.log(id)
+//         console.log(phone)
+//         console.log(language1)
+//     database().ref(`/blind/${userId}`).
+//  set({phonenumber:phone, language:language1 }).
+//  then(
+//      ()=> {
+//          ToastAndroid.show("Account Updated Successfully!", ToastAndroid.SHORT)
+//           setUserId(userId);
+//          setTest(true)
+//          navigation.navigate("MyProfile")
+//      }
+//  ).catch((error)=> ToastAndroid.show(error.message, ToastAndroid.SHORT))
+//   }
   async function setUserId(userId) {
     try {
       const userString = JSON.stringify(userId);
