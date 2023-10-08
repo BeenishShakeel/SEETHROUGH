@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from "react";
-import { View, Text, StyleSheet, ImageBackground, Image, ToastAndroid, Pressable, FlatList } from "react-native";
+import { View, Text, StyleSheet, ImageBackground, Image, ToastAndroid, Pressable, FlatList, NativeModules } from "react-native";
 import { useIsFocused } from "@react-navigation/native";
 import Sound from 'react-native-sound';
 import Voice from '@react-native-voice/voice';
@@ -11,7 +11,17 @@ import database from '@react-native-firebase/database';
 import AsyncStorage from '@react-native-async-storage/async-storage';
 import Contacts from 'react-native-contacts';
 import RNImmediatePhoneCall from 'react-native-immediate-phone-call';
-import {distance, closest} from 'fastest-levenshtein';
+import { distance, closest } from 'fastest-levenshtein';
+import AudioRecorderPlayer from 'react-native-audio-recorder-player';
+// import database from '@react-native-firebase/database';
+// import {utils} from '@react-native-firebase/app';
+// import storage from '@react-native-firebase/storage';
+import VolunteerSearchWithRating, { VolunteerSearchFromContacts } from "./volunteerSearchService";
+
+
+
+const audioRecorderPlayer = new AudioRecorderPlayer();
+
 
 //export default ContactsList;
 //export {Contact};
@@ -19,8 +29,15 @@ import {distance, closest} from 'fastest-levenshtein';
 //import {Contact} from '.';
 
 function detectIntentText(query, lat, long) {
-  axios.post("http://192.168.10.21:8000/get-response", { query: query, location: { latitude: lat, longitude: long } })
+  axios.post("http://192.168.18.55:8000/get-response", { query: query, location: { latitude: lat, longitude: long } })
     .then(response => {
+      console.log("Response: ", response.data);
+      if (response.data.intent === "search volunteer with good rating") {
+        VolunteerSearchWithRating();
+      }
+      else if (response.data.intent === "search volunteer from contacts") {
+        VolunteerSearchFromContacts();
+      }
       console.log("lat:", lat)
       console.log("long:", long)
       console.log("res: ", response.data);
@@ -39,6 +56,13 @@ export default function Open({ navigation }) {
   const [starttext, setstarttext] = useState("To start videocall speak videocall")
   const [audioData, setAudioData] = useState(null);
   const [contacts, setContacts] = useState([]);
+  const [phoneNumber, setPhoneNumber] = useState("");
+  const [message, setMessage] = useState("");
+  const [isRecording, setIsRecording] = useState(false);
+  const [audioFileName, setAudioFileName] = useState('');
+  const [results, setResults] = useState([]);
+
+
 
   const isFocused = useIsFocused();
   useEffect(() => {
@@ -64,6 +88,7 @@ export default function Open({ navigation }) {
     }
   }, [isFocused])
 
+
   const onSpeechStartHandler = (e) => {
     console.log('start handler');
   }
@@ -71,6 +96,36 @@ export default function Open({ navigation }) {
   const onSpeechEndHandler = (e) => {
     console.log('end handler');
   }
+
+  const startRecording = async () => {
+    try {
+      const result = await audioRecorderPlayer.startRecorder();
+      Tts.speak(result);
+
+      setIsRecording(true);
+    } catch (error) {
+      console.error('Error starting recording:', error);
+    }
+  };
+
+  const stopRecording = async () => {
+    try {
+      const result = await audioRecorderPlayer.stopRecorder();
+      setIsRecording(false);
+      setAudioFileName(result);
+    } catch (error) {
+      console.error('Error stopping recording:', error);
+    }
+  };
+
+  const playAudio = async () => {
+    try {
+      await audioRecorderPlayer.startPlayer(audioFileName);
+    } catch (error) {
+      console.error('Error playing audio:', error);
+    }
+  };
+
 
   const onSpeechResultsHandler = (e) => {
     console.log(e);
@@ -83,7 +138,7 @@ export default function Open({ navigation }) {
           let c = contact?.givenName;
           return distance(name, c);
         });
-      
+
         let min = Math.min(...distances);
         console.log("min", min)
         let contact = contacts[distances.indexOf(min)];
@@ -91,15 +146,41 @@ export default function Open({ navigation }) {
         if (contact) {
           RNImmediatePhoneCall.immediatePhoneCall(contact.phoneNumbers[0].number);
         }
+        //navigation.navigate('ContactList');
       }
-      else if(e.value[0].includes("voice")) {
-        navigation.navigate("voiceOperations")
+      else if (e.value[0].includes("message")) {
+        let DirectSms = NativeModules.DirectSms;
+        let name = e.value[0].substring(7);
+        console.log("Name: ", name);
+        let distances = contacts.map(contact => {
+          let c = contact?.givenName;
+          return distance(name, c);
+        });
+        console.log(distances);
+        let min = Math.min(...distances);
+        console.log("min", min)
+        let contact = contacts[distances.indexOf(min)];
+        console.log(contact);
+        if (contact) {
+          DirectSms.sendDirectSms(contact.phoneNumbers[0].number, "Hello Been]! Aap kaachi ho?");
+        }
+      }
+      else if (e.value[0].includes("start recording")) {
+        Tts.speak('Recording started');
+        startRecording();
+      }
+      else if (e.value[0].includes("stop recording")) {
+        stopRecording();
+      }
+      else if (e.value[0].includes("play audio") && audioFileName) {
+        playAudio();
       }
       else {
         detectIntentText(e.value[0], lat, long);
       }
     }
   }
+
   const requestLocationPermission = async () => {
     var allow = false;
     try {
@@ -224,16 +305,7 @@ export default function Open({ navigation }) {
       { enableHighAccuracy: true, timeout: 15000, maximumAge: 10000 }
     );
   }
-  // <Animatable.View style={{ backgroundColor: 'white', marginTop: 390, height: 365, width: 360, borderTopLeftRadius: 60, borderTopRightRadius: 60 }} animation="fadeInUpBig" >
-  //          <Text style={{ marginTop: 100, fontSize: 25, marginLeft: 110, fontFamily: "Poppins-Bold", color: '#368BC1' }} onPress={() => { Voice.start() }}>Listening....</Text>
-  //          <Animatable.Image
-  //             style={{ marginLeft: 140, borderRadius: 10, marginTop: 20, width: 75, height: 75 }}
-  //             source={require('../assets/images/google.png')} animation="bounceIn" duration={10000}
 
-  //          />
-
-  //          <Icon name="arrow-forward-outline" style={{ marginTop: 30 }} marginLeft={280} size={45} color={'#368BC1'} onPress={() => navigation.navigate('splashScreen')} />
-  //       </Animatable.View>
   return (
     <View style={{ flex: 1 }}>
       <Pressable onPress={() => { Voice.start() }}>
@@ -242,7 +314,7 @@ export default function Open({ navigation }) {
       </Pressable>
     </View>
   );
-};
+}
 
 const styles = StyleSheet.create({
   container: {

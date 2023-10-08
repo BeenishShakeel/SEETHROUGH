@@ -173,6 +173,7 @@ dependencies {
     implementation project(':@react-native-voice_voice')
     implementation project(':react-native-contacts')
     implementation project(':react-native-immediate-phone-call')
+    implementation project(':react-native-audio-recorder-player')
 
     debugImplementation("com.facebook.flipper:flipper:${FLIPPER_VERSION}")
     debugImplementation("com.facebook.flipper:flipper-network-plugin:${FLIPPER_VERSION}") {
