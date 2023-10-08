@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from "react";
-import { View, Text, StyleSheet, ImageBackground, Image, ToastAndroid, Pressable, FlatList, NativeModules} from "react-native";
+import { View, Text, StyleSheet, ImageBackground, Image, ToastAndroid, Pressable, FlatList, NativeModules } from "react-native";
 import { useIsFocused } from "@react-navigation/native";
 import Sound from 'react-native-sound';
 import Voice from '@react-native-voice/voice';
@@ -11,8 +11,14 @@ import database from '@react-native-firebase/database';
 import AsyncStorage from '@react-native-async-storage/async-storage';
 import Contacts from 'react-native-contacts';
 import RNImmediatePhoneCall from 'react-native-immediate-phone-call';
-import {distance, closest} from 'fastest-levenshtein';
-import  AudioRecorderPlayer  from 'react-native-audio-recorder-player';
+import { distance, closest } from 'fastest-levenshtein';
+import AudioRecorderPlayer from 'react-native-audio-recorder-player';
+// import database from '@react-native-firebase/database';
+// import {utils} from '@react-native-firebase/app';
+// import storage from '@react-native-firebase/storage';
+import VolunteerSearchWithRating, { VolunteerSearchFromContacts } from "./volunteerSearchService";
+
+
 
 const audioRecorderPlayer = new AudioRecorderPlayer();
 
@@ -23,8 +29,15 @@ const audioRecorderPlayer = new AudioRecorderPlayer();
 //import {Contact} from '.';
 
 function detectIntentText(query, lat, long) {
-  axios.post("http://192.168.10.21:8000/get-response", { query: query, location: { latitude: lat, longitude: long } })
+  axios.post("http://192.168.18.55:8000/get-response", { query: query, location: { latitude: lat, longitude: long } })
     .then(response => {
+      console.log("Response: ", response.data);
+      if (response.data.intent === "search volunteer with good rating") {
+        VolunteerSearchWithRating();
+      }
+      else if (response.data.intent === "search volunteer from contacts") {
+        VolunteerSearchFromContacts();
+      }
       console.log("lat:", lat)
       console.log("long:", long)
       console.log("res: ", response.data);
@@ -48,7 +61,7 @@ export default function Open({ navigation }) {
   const [isRecording, setIsRecording] = useState(false);
   const [audioFileName, setAudioFileName] = useState('');
   const [results, setResults] = useState([]);
-  
+
 
 
   const isFocused = useIsFocused();
@@ -75,6 +88,7 @@ export default function Open({ navigation }) {
     }
   }, [isFocused])
 
+
   const onSpeechStartHandler = (e) => {
     console.log('start handler');
   }
@@ -87,6 +101,7 @@ export default function Open({ navigation }) {
     try {
       const result = await audioRecorderPlayer.startRecorder();
       Tts.speak(result);
+
       setIsRecording(true);
     } catch (error) {
       console.error('Error starting recording:', error);
@@ -110,7 +125,7 @@ export default function Open({ navigation }) {
       console.error('Error playing audio:', error);
     }
   };
-   
+
 
   const onSpeechResultsHandler = (e) => {
     console.log(e);
@@ -123,7 +138,7 @@ export default function Open({ navigation }) {
           let c = contact?.givenName;
           return distance(name, c);
         });
-      
+
         let min = Math.min(...distances);
         console.log("min", min)
         let contact = contacts[distances.indexOf(min)];
@@ -146,26 +161,26 @@ export default function Open({ navigation }) {
         console.log("min", min)
         let contact = contacts[distances.indexOf(min)];
         console.log(contact);
-        if (contact){
-          DirectSms.sendDirectSms(contact.phoneNumbers[0].number, "Hello Beeni! Aap kaachi ho?");
+        if (contact) {
+          DirectSms.sendDirectSms(contact.phoneNumbers[0].number, "Hello Been]! Aap kaachi ho?");
         }
       }
       else if (e.value[0].includes("start recording")) {
-          Tts.speak('Recording started');
-          startRecording();
-      } 
+        Tts.speak('Recording started');
+        startRecording();
+      }
       else if (e.value[0].includes("stop recording")) {
-          stopRecording();
+        stopRecording();
       }
       else if (e.value[0].includes("play audio") && audioFileName) {
-          playAudio();
-        }
+        playAudio();
       }
       else {
         detectIntentText(e.value[0], lat, long);
       }
     }
-  
+  }
+
   const requestLocationPermission = async () => {
     var allow = false;
     try {
@@ -290,7 +305,7 @@ export default function Open({ navigation }) {
       { enableHighAccuracy: true, timeout: 15000, maximumAge: 10000 }
     );
   }
-  
+
   return (
     <View style={{ flex: 1 }}>
       <Pressable onPress={() => { Voice.start() }}>
