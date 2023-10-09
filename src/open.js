@@ -1,5 +1,13 @@
 import React, { useState, useEffect } from "react";
-import { View, Text, StyleSheet, ImageBackground, Image, ToastAndroid, Pressable, FlatList, NativeModules } from "react-native";
+import { View, Text, StyleSheet, ImageBackground, Image, ToastAndroid, Pressable, FlatList } from "react-native";
+import Background from "./background";
+import MaterialIcons from "react-native-vector-icons/MaterialIcons";
+import MaterialCommunityIcons from "react-native-vector-icons/MaterialCommunityIcons";
+import Btn1 from "../assets/buttons/btn1";
+import Back4 from "./back4";
+import TextField from "./textField";
+import { Gif } from 'react-native-gif'
+import Icon from "react-native-vector-icons/Ionicons";
 import { useIsFocused } from "@react-navigation/native";
 import Sound from 'react-native-sound';
 import Voice from '@react-native-voice/voice';
@@ -13,14 +21,18 @@ import Contacts from 'react-native-contacts';
 import RNImmediatePhoneCall from 'react-native-immediate-phone-call';
 import { distance, closest } from 'fastest-levenshtein';
 import AudioRecorderPlayer from 'react-native-audio-recorder-player';
+import { NavigationContainer } from '@react-navigation/native';
 // import database from '@react-native-firebase/database';
 // import {utils} from '@react-native-firebase/app';
 // import storage from '@react-native-firebase/storage';
-import VolunteerSearchWithRating, { VolunteerSearchFromContacts } from "./volunteerSearchService";
+import firestore from '@react-native-firebase/firestore';
+import { VolunteerSearchWithRating, VolunteerSearchFromContacts, VolunteerSearchNearestLocation } from "./volunteerSearchService";
+import { setupVideoCall } from "./videoService";
 
 
 
 const audioRecorderPlayer = new AudioRecorderPlayer();
+let volunteer_id = null;
 
 
 //export default ContactsList;
@@ -28,19 +40,44 @@ const audioRecorderPlayer = new AudioRecorderPlayer();
 //import Contacts from 'react-native-contacts';
 //import {Contact} from '.';
 
-function detectIntentText(query, lat, long) {
+function detectIntentText(navigation, query, lat, long) {
   axios.post("http://192.168.18.55:8000/get-response", { query: query, location: { latitude: lat, longitude: long } })
-    .then(response => {
+    .then(async (response) => {
       console.log("Response: ", response.data);
       if (response.data.intent === "search volunteer with good rating") {
-        VolunteerSearchWithRating();
+        VolunteerSearchWithRating()
+        .then(userId => {
+          console.log("User ID: ", userId);
+          setupVideoCall(userId);
+        })
+        .catch(err => console.error(err));
       }
       else if (response.data.intent === "search volunteer from contacts") {
-        VolunteerSearchFromContacts();
+        VolunteerSearchFromContacts()
+        .then(userId => {
+          console.log("User ID: ", userId);
+          setupVideoCall(userId);
+        })
+        .catch(err => console.error(err));
       }
-      console.log("lat:", lat)
-      console.log("long:", long)
-      console.log("res: ", response.data);
+      else if (response.data.intent === "search volunteer with nearest location") {
+        VolunteerSearchNearestLocation()
+        .then(userId => {
+          console.log("User ID: ", userId);
+          setupVideoCall(userId);
+        })
+        .catch(err => console.error(err));
+      }
+      if (userId) {
+        axios.post("http://192.168.18.55:8000/get-videoToken", { identity: userId , roomName: 'MY ROOM' })
+          .then(response => {
+
+          })
+      }
+
+      //console.log("lat:", lat)
+      //console.log("long:", long)
+      //console.log("res: ", response.data);
       if (response.data) {
         Tts.speak(response.data.responses[0].text.text[0]);
       }
@@ -52,17 +89,8 @@ export default function Open({ navigation }) {
   const [lat, setLat] = useState(33.6500104);
   const [long, setLong] = useState(73.1556531);
   const [lang, setlang] = useState("")
-  const [result, setResult] = useState("")
-  const [starttext, setstarttext] = useState("To start videocall speak videocall")
-  const [audioData, setAudioData] = useState(null);
   const [contacts, setContacts] = useState([]);
-  const [phoneNumber, setPhoneNumber] = useState("");
-  const [message, setMessage] = useState("");
-  const [isRecording, setIsRecording] = useState(false);
   const [audioFileName, setAudioFileName] = useState('');
-  const [results, setResults] = useState([]);
-
-
 
   const isFocused = useIsFocused();
   useEffect(() => {
@@ -176,7 +204,7 @@ export default function Open({ navigation }) {
         playAudio();
       }
       else {
-        detectIntentText(e.value[0], lat, long);
+        detectIntentText(navigation,e.value[0], lat, long);
       }
     }
   }
@@ -211,12 +239,10 @@ export default function Open({ navigation }) {
       const userString = await AsyncStorage.getItem('userId');
       if (userString !== null) {
         console.log('User ID:', userString);
-        database().ref(`/blind/${userString}`).once("value").then(snapshot => {
-          let language = snapshot.val().language
-          AsyncStorage.setItem('language', language).then(() => {
-            Promise.resolve(); // wrap in Promise.resolve()
-          });
-        })
+        firestore().collection('blind').doc(userString).get().then(querySnapshot => {
+          console.log("Blind's data: ", querySnapshot[0].data());
+          AsyncStorage.setItem("language", querySnapshot[0].data().language);
+        });
         const condition = await AsyncStorage.getItem('language')
         if (condition === "English") {
           english()

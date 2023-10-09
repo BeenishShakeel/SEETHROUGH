@@ -5,8 +5,6 @@ import Btn1 from "../assets/buttons/btn1";
 import TextField from "./textField";
 import { colors } from "../assets/constants/colors";
 
-
-
 export default function Home({navigation}){
     return(
         <View style={{ marginTop: 25, flexDirection: 'row' }}>

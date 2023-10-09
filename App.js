@@ -1,5 +1,4 @@
 import React, {useEffect} from 'react';
-import {View, Text} from 'react-native';
 import {NavigationContainer, TabActions} from "@react-navigation/native";
 import { createStackNavigator } from '@react-navigation/stack';
 import {createBottomTabNavigator} from '@react-navigation/bottom-tabs';
@@ -7,11 +6,13 @@ import Login from './src/login';
 import Aboutus from './src/Aboutus';
 import Open from './src/open';
 import Profile from './src/Profile';
+import Review from './src/review';
 import BlindSignup from './src/blindsignup';
 import SignUp from './src/signUp';
 import EditProfile from'./src/EditProfile'
 import Verification from './src/verification'
 import AdminNav from './src/AdminNav';
+import Gps from './src/gps';
 import  Splash from './src/splashScreen';
 import MaterialIcons from "react-native-vector-icons/MaterialIcons";
 import { colors } from './assets/constants/colors';
@@ -44,6 +45,9 @@ function Root() {
         else if (route.name === "Profile"){
           iconName = focused ? 'person' : 'person';
         }
+        else if (route.name === "Review"){
+          iconName = focused ? 'star' : 'star';
+        }
         return <MaterialIcons name={iconName} size = {size} color= {'#1F4A83'}></MaterialIcons>
       },
       tabBarActiveTintColor: '#1F4A83',
@@ -52,18 +56,17 @@ function Root() {
   
       <Tab.Screen name="Aboutus" component= {Aboutus}/>
       <Tab.Screen name="Profile" component= {Profile}/>
+      <Tab.Screen name="Review" component= {Review}/>
     </Tab.Navigator>
   );
 }
 export default function App(){
- 
-  return(
-
-    
+  return(    
     <NavigationContainer>
       <Stack.Navigator screenOptions={{headerShown: false}} initialRouteName = 'open'>
       <Stack.Screen name= "open" component={Open} />
       <Stack.Screen name= "voiceOperations" component={VoiceOperations} />
+      <Stack.Screen name= "gps" component={Gps} />
       <Stack.Screen name= "splashScreen" component={Splash} />
       <Stack.Screen name= "blindsignup" component={BlindSignup} />
       <Stack.Screen name= "SignUp" component={SignUp}/> 
