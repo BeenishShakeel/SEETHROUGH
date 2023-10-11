@@ -48,7 +48,7 @@ function detectIntentText(navigation, query, lat, long) {
         VolunteerSearchWithRating()
         .then(userId => {
           console.log("User ID: ", userId);
-          setupVideoCall(userId);
+          setupVideoCall(navigation, userId);
         })
         .catch(err => console.error(err));
       }
@@ -56,7 +56,7 @@ function detectIntentText(navigation, query, lat, long) {
         VolunteerSearchFromContacts()
         .then(userId => {
           console.log("User ID: ", userId);
-          setupVideoCall(userId);
+          setupVideoCall(navigation, userId);
         })
         .catch(err => console.error(err));
       }
@@ -64,7 +64,7 @@ function detectIntentText(navigation, query, lat, long) {
         VolunteerSearchNearestLocation()
         .then(userId => {
           console.log("User ID: ", userId);
-          setupVideoCall(userId);
+          setupVideoCall(navigation, userId);
         })
         .catch(err => console.error(err));
       }
@@ -204,7 +204,7 @@ export default function Open({ navigation }) {
         playAudio();
       }
       else {
-        detectIntentText(navigation,e.value[0], lat, long);
+        detectIntentText(navigation, e.value[0], lat, long);
       }
     }
   }
