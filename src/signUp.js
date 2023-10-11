@@ -1,4 +1,4 @@
-import React, {useState} from "react";
+import React, {useState , useEffect} from "react";
 import {Text,View, StyleSheet,TouchableOpacity, ToastAndroid} from "react-native";
 import Background2 from "./background2";
 import Btn1 from "../assets/buttons/btn1";
@@ -8,9 +8,13 @@ import Icon from "react-native-vector-icons/Ionicons";
 import { colors } from "../assets/constants/colors";
 import MaterialIcons from "react-native-vector-icons/MaterialIcons";
 import auth from '@react-native-firebase/auth';
+import firestore from '@react-native-firebase/firestore';
 import database from '@react-native-firebase/database';
+import Geolocation from 'react-native-geolocation-service';
+import { request, PERMISSIONS } from '@react-native-permissions'; // Import the necessary functions
 export default function SignUp({navigation}){
     const [language, setLanguage] = React.useState();
+    const [location, setLocation] = useState(null);
     const data = [
         { key: '1', value: 'Urdu' },
         { key: '2', value: 'English' },
@@ -22,12 +26,70 @@ export default function SignUp({navigation}){
       const [firstName, setFirstName] = useState('')
       const [lastName, setLastName] = useState('')
       const [phoneNumber, setPhoneNumber] = useState('')
+      const [rating , setRating] = useState(0.0)
     
-                    
-            
+  useEffect(() => {
+
     
-  
-      function SignUpAuth(){
+    
+        Geolocation.getCurrentPosition(
+            (position) => {
+              const { latitude, longitude } = position.coords;
+              console.log(position);
+              setLocation({ latitude, longitude });
+            },
+            (error) => {
+              // See error code charts below.
+              console.log(error.code, error.message);
+            },
+            { enableHighAccuracy: true, timeout: 15000, maximumAge: 10000 }
+        );
+      
+  },
+
+    []);
+      
+
+     
+
+      
+      function SignUpAuth() {
+        if (password === confirmPassword) {
+            const randomRating = Math.floor(Math.random() * 11); 
+             const rating = (randomRating * 0.5).toFixed(1);
+          auth()
+            .createUserWithEmailAndPassword(email, password)
+            .then((response) => {
+              const userRef = firestore().collection('users').doc(response.user.uid);
+      
+              userRef
+                .set({
+                  firstName: firstName,
+                  lastName: lastName,
+                  phoneNumber: phoneNumber,
+                  email: email,
+                  language: language,
+                  rating: rating,
+                  location: location,
+                })
+                .then(() => {
+                  ToastAndroid.show("User Created Successfully", ToastAndroid.SHORT);
+                  navigation.navigate("Login");
+                })
+                .catch((error) => {
+                  ToastAndroid.show(error.message, ToastAndroid.SHORT);
+                  console.log("Error: ", error.message);
+                });
+            })
+            .catch((error) => {
+              ToastAndroid.show(error.message, ToastAndroid.SHORT);
+              console.log("Error: ", error.message);
+            });
+        } else {
+          ToastAndroid.show("Your Password doesn't match!", ToastAndroid.SHORT);
+        }
+      }  
+      /*function SignUpAuth(){
        
           if(password===confirmPassword){
         
@@ -55,6 +117,7 @@ export default function SignUp({navigation}){
           ToastAndroid.show("Your Password doesn't match!", ToastAndroid.SHORT);
       }
       }
+      */
     return(
         <View style = {{flex: 1 ,  backgroundColor:'white'}}>
         <View style = {{backgroundColor:'#1F4A83' , height:1000 , marginTop:60, width:370, borderTopLeftRadius:80 ,borderTopRightRadius:80}}>

@@ -1,4 +1,4 @@
-import React, {useState} from "react";
+import React, {useState ,  useEffect} from "react";
 import {View, Text, StyleSheet ,ImageBackground, Image ,ToastAndroid} from "react-native";
 import Background from "./background";
 import MaterialIcons from "react-native-vector-icons/MaterialIcons";
@@ -15,11 +15,31 @@ import { colors } from "../assets/constants/colors";
 			// imageStyle={{ opacity: 0.6 }}>
 
 export default function Aboutus({navigation}){
+  const images = [
+    require('../assets/images/12.jpg'),
+   
+    require('../assets/images/112.jpg'),
+    require('../assets/images/13.jpg'),
+    require('../assets/images/15.jpg'),
+    require('../assets/images/16.jpg'),
+    require('../assets/images/111.jpg'),
+    
+    // Add more image paths here
+  ];
+  const [currentImageIndex, setCurrentImageIndex] = useState(0);
+
+  useEffect(() => {
+    const interval = setInterval(() => {
+      setCurrentImageIndex((prevIndex) => (prevIndex + 1) % images.length);
+    }, 3000); // Change image every 3 seconds
+
+    return () => clearInterval(interval);
+  }, []);
     return(
      <View style = {{backgroundColor:"#D5DBDB" , flex:1}}>
      
  <Image
-				source={require('../assets/images/12.jpg')}
+ source={images[currentImageIndex]}
 				style={styles.image}></Image>
 		<Text style = {{marginTop : 20 , fontSize:25, marginLeft:60, fontFamily :"Poppins-BoldItalic" , color :'black'}}>Whats Our Moto??</Text>
 		<View style = {{ marginTop :10, marginLeft:10, marginRight:45,alignItems:'center'}}>
@@ -32,7 +52,7 @@ export default function Aboutus({navigation}){
            people lead independent life
            </Text>
                </View>
-             <View style = {{marginTop :25,marginLeft:10,flexDirection:'row'}}> 
+             <View style = {{marginBottom :10,marginLeft:10,flexDirection:'row'}}> 
              <View style ={{flexDirection:'column'}}>
              <View style = {{backgroundColor:"#1F4A83" , marginLeft:30, marginTop:80, borderRadius:50,width:50,height:50}}>
                <MaterialIcons style = {{marginTop:8 , marginLeft:10}}name="call" size = {30} color= {'white'}></MaterialIcons>
