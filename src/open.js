@@ -48,7 +48,7 @@ function detectIntentText(navigation, query, lat, long) {
         VolunteerSearchWithRating()
         .then(userId => {
           console.log("User ID: ", userId);
-          setupVideoCall(userId);
+          setupVideoCall(navigation, userId);
         })
         .catch(err => console.error(err));
       }
@@ -56,7 +56,7 @@ function detectIntentText(navigation, query, lat, long) {
         VolunteerSearchFromContacts()
         .then(userId => {
           console.log("User ID: ", userId);
-          setupVideoCall(userId);
+          setupVideoCall(navigation, userId);
         })
         .catch(err => console.error(err));
       }
@@ -64,16 +64,11 @@ function detectIntentText(navigation, query, lat, long) {
         VolunteerSearchNearestLocation()
         .then(userId => {
           console.log("User ID: ", userId);
-          setupVideoCall(userId);
+          setupVideoCall(navigation, userId);
         })
         .catch(err => console.error(err));
       }
-      if (userId) {
-        axios.post("http://192.168.18.55:8000/get-videoToken", { identity: userId , roomName: 'MY ROOM' })
-          .then(response => {
-
-          })
-      }
+      
 
       //console.log("lat:", lat)
       //console.log("long:", long)
@@ -204,7 +199,7 @@ export default function Open({ navigation }) {
         playAudio();
       }
       else {
-        detectIntentText(navigation,e.value[0], lat, long);
+        detectIntentText(navigation, e.value[0], lat, long);
       }
     }
   }

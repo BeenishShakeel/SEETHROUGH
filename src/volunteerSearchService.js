@@ -9,16 +9,15 @@ export const VolunteerSearchWithRating = async () => {
       .where('rating', '>=', 4.5)
       .get()
       .then(querySnapshot => {
-        if (querySnapshot.length > 0) {
-          resolve(querySnapshot[0].id);
-        }
-        else {
-          resolve(null);
-        }
-      })
+        querySnapshot.forEach(documentSnapshot =>{
+          return resolve(documentSnapshot.id)
+        });
+          return resolve(null);    
+        })
       .catch(err => reject(err));
-  });
-}
+      });
+  }
+
 
 export const VolunteerSearchFromContacts = () => {
   return new Promise((resolve, reject) => {
@@ -34,7 +33,11 @@ export const VolunteerSearchFromContacts = () => {
             .where('isEngaged', '==', false)
             .get()
             .then(querySnapshot => {
-              resolve(querySnapshot[0].id);
+              querySnapshot.forEach(documentSnapshot => {
+                console.log("QQQQ ", documentSnapshot)
+                return resolve(documentSnapshot.id);
+              });
+              return resolve(null);
             })
             .catch(err => reject(err));
         }
