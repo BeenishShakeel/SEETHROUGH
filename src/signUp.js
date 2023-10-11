@@ -126,10 +126,10 @@ export default function SignUp({navigation}){
             <Text style={{fontFamily: "Poppins-SemiBold", fontSize: 30, alignSelf:"center", marginTop :30,color:'white' }}>REGISTER</Text>
             <TextField2 placeholder="First Name" name="edit"   onChangeText={setFirstName} value={firstName}  />
             <TextField2 placeholder="Last Name" name="edit"  onChangeText={setLastName} value={lastName}/>
-            <TextField2 placeholder="Email" keyboardType="numeric" name="mail-outline"  onChangeText={setEmail} value={email} />
-            <TextField2 placeholder="Password"  keyboardType="email-address"  name="lock" secureTextEntry={true} onChangeText={setPassword} value={password}/>
+            <TextField2 placeholder="Email" keyboardType="email-address" name="mail-outline"  onChangeText={setEmail} value={email} />
+            <TextField2 placeholder="Password" name="lock" secureTextEntry={true} onChangeText={setPassword} value={password}/>
             <TextField2 placeholder="Confirm Password" secureTextEntry={true} name="lock" onChangeText={setConfirmPassword} value={confirmPassword}  />
-            <TextField2 placeholder="Phone Number"  name="phone"   onChangeText={setPhoneNumber} value={phoneNumber} 
+            <TextField2 placeholder="Phone Number"  name="numeric"   onChangeText={setPhoneNumber} value={phoneNumber} 
             />
       
             <SelectList
