@@ -12,6 +12,8 @@ import firestore from '@react-native-firebase/firestore';
 import database from '@react-native-firebase/database';
 import Geolocation from 'react-native-geolocation-service';
 import { request, PERMISSIONS } from '@react-native-permissions'; // Import the necessary functions
+import AsyncStorage from "@react-native-async-storage/async-storage";
+
 export default function SignUp({ navigation }) {
   const [language, setLanguage] = React.useState();
   const [location, setLocation] = useState(null);
@@ -41,7 +43,6 @@ export default function SignUp({ navigation }) {
       },
       { enableHighAccuracy: true, timeout: 15000, maximumAge: 10000 }
     );
-
   }, []);
 
   function SignUpAuth() {

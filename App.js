@@ -23,7 +23,9 @@ import Video from './screens/video';
 import ContactsList from './src/ContactList';
 import Contact from './src/Contact';
 import VoiceOperations from "./src/Clock";
-import messaging from "@react-native-firebase/messaging"
+import messaging from "@react-native-firebase/messaging";
+import notifee from '@notifee/react-native';
+import { Alert } from 'react-native';
 
 function onMessageReceived(message, navigation) {
   console.log("Notification data: ", message.data);
@@ -34,9 +36,11 @@ function onMessageReceived(message, navigation) {
       channelId: 'volunteerhelp',
     },
   });
-  Alert.prompt("Incoming call", "Do you want to accept?", () => {
+  setTimeout(() => {
     navigation.navigate("Video", {token: message.data.roomID});
-  });
+  }, 10000);
+  // Alert.prompt("Incoming call", "Do you want to accept?", () => {
+  // });
 }
 
 function Root({ navigation }) {
@@ -84,7 +88,7 @@ function Root({ navigation }) {
 export default function App() {
   return (
     <NavigationContainer>
-      <Stack.Navigator screenOptions={{ headerShown: false }} initialRouteName='SignUp'>
+      <Stack.Navigator screenOptions={{ headerShown: false }} initialRouteName='Root'>
         <Stack.Screen name="open" component={Open} />
         <Stack.Screen name="voiceOperations" component={VoiceOperations} />
         <Stack.Screen name="gps" component={Gps} />

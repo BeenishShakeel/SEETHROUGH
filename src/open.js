@@ -309,18 +309,18 @@ export default function Open({ navigation }) {
   }
 
   const getLocation = () => {
-    // Geolocation.getCurrentPosition(
-    //   (position) => {
-    //     console.log(position);
-    //     setLat(position.coords.latitude);
-    //     setLong(position.coords.longitude);
-    //   },
-    //   (error) => {
-    //     // See error code charts below.
-    //     console.log(error.code, error.message);
-    //   },
-    //   { enableHighAccuracy: true, timeout: 15000, maximumAge: 10000 }
-    // );
+    Geolocation.getCurrentPosition(
+      (position) => {
+        console.log(position);
+        setLat(position.coords.latitude);
+        setLong(position.coords.longitude);
+      },
+      (error) => {
+        // See error code charts below.
+        console.log(error.code, error.message);
+      },
+      { enableHighAccuracy: true, timeout: 15000, maximumAge: 10000 }
+    );
   }
 
   return (
