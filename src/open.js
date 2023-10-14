@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from "react";
-import { View, Text, StyleSheet, ImageBackground, Image, ToastAndroid, Pressable, FlatList } from "react-native";
+import { View, Text, StyleSheet, ImageBackground, Image, ToastAndroid, Pressable, FlatList, NativeModules } from "react-native";
 import Background from "./background";
 import MaterialIcons from "react-native-vector-icons/MaterialIcons";
 import MaterialCommunityIcons from "react-native-vector-icons/MaterialCommunityIcons";
@@ -31,6 +31,7 @@ import { setupVideoCall } from "./videoService";
 
 
 
+
 const audioRecorderPlayer = new AudioRecorderPlayer();
 let volunteer_id = null;
 
@@ -40,7 +41,7 @@ let volunteer_id = null;
 //import Contacts from 'react-native-contacts';
 //import {Contact} from '.';
 
-function detectIntentText(navigation, query, lat, long) {
+function detectIntentText(navigation, query, lat, long, contacts) {
   axios.post("http://192.168.18.55:8000/get-response", { query: query, location: { latitude: lat, longitude: long } })
     .then(async (response) => {
       console.log("Response: ", response.data);
@@ -67,6 +68,40 @@ function detectIntentText(navigation, query, lat, long) {
           setupVideoCall(navigation, userId);
         })
         .catch(err => console.error(err));
+      }
+      else if (response.data.intent === "Make a Call") {
+        console.log("i am trying to contact");
+        let name = response.data.data.queryResult.parameters.fields.person.structValue.fields.name.stringValue;
+        let distances = contacts.map(contact => {
+              let c = contact?.givenName;
+              return distance(name, c);
+            });
+    
+            let min = Math.min(...distances);
+            console.log("min", min)
+            let contact = contacts[distances.indexOf(min)];
+            console.log(contact);
+            if (contact) {
+              RNImmediatePhoneCall.immediatePhoneCall(contact.phoneNumbers[0].number);
+            }
+      }
+       else if (response.data.intent === "Message a contact") {
+        let DirectSms = NativeModules.DirectSms;
+        let name = response.data.data.queryResult.parameters.fields.person.structValue.fields.name.stringValue;
+        console.log("Name: ", name);
+        let distances = contacts.map(contact => {
+          let c = contact?.givenName;
+          return distance(name, c);
+        });
+        console.log(distances);
+        let min = Math.min(...distances);
+        console.log("min", min)
+        let contact = contacts[distances.indexOf(min)];
+        console.log(contact);
+        if (contact) {
+          DirectSms.sendDirectSms(contact.phoneNumbers[0].number, "Hello Been]! Aap kaachi ho?");
+        }
+     
       }
       
 
@@ -103,7 +138,11 @@ export default function Open({ navigation }) {
     }
 
     Contacts.getAll().then(contacts => {
+      // console.log(contacts);
       setContacts(contacts);
+      //saveContacts();
+      
+     
     });
 
     return () => {
@@ -153,42 +192,7 @@ export default function Open({ navigation }) {
   const onSpeechResultsHandler = (e) => {
     console.log(e);
     if (e.value.length > 0) {
-      if (e.value[0].includes("call")) {
-        let name = e.value[0].substring(5);
-        console.log("Name: ", name);
-
-        let distances = contacts.map(contact => {
-          let c = contact?.givenName;
-          return distance(name, c);
-        });
-
-        let min = Math.min(...distances);
-        console.log("min", min)
-        let contact = contacts[distances.indexOf(min)];
-        console.log(contact);
-        if (contact) {
-          RNImmediatePhoneCall.immediatePhoneCall(contact.phoneNumbers[0].number);
-        }
-        //navigation.navigate('ContactList');
-      }
-      else if (e.value[0].includes("message")) {
-        let DirectSms = NativeModules.DirectSms;
-        let name = e.value[0].substring(7);
-        console.log("Name: ", name);
-        let distances = contacts.map(contact => {
-          let c = contact?.givenName;
-          return distance(name, c);
-        });
-        console.log(distances);
-        let min = Math.min(...distances);
-        console.log("min", min)
-        let contact = contacts[distances.indexOf(min)];
-        console.log(contact);
-        if (contact) {
-          DirectSms.sendDirectSms(contact.phoneNumbers[0].number, "Hello Been]! Aap kaachi ho?");
-        }
-      }
-      else if (e.value[0].includes("start recording")) {
+      if (e.value[0].includes("start recording")) {
         Tts.speak('Recording started');
         startRecording();
       }
@@ -199,10 +203,19 @@ export default function Open({ navigation }) {
         playAudio();
       }
       else {
-        detectIntentText(navigation, e.value[0], lat, long);
+        detectIntentText(navigation, e.value[0], lat, long, contacts);
       }
     }
   }
+  // const saveContacts = async () =>{
+  //   const userRef = firestore().collection('blind').doc(userId);
+  //     await userRef.set({
+  //       contacts : contacts.forEach( contact => {
+  //         name: contact.givenName
+  //         number: contact.phoneNumbers[0].number
+  //       })
+  //     });
+  // }
 
   const requestLocationPermission = async () => {
     var allow = false;
