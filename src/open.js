@@ -41,7 +41,7 @@ let volunteer_id = null;
 //import {Contact} from '.';
 
 function detectIntentText(navigation, query, lat, long) {
-  axios.post("http://192.168.18.11:8000/get-response", { query: query, location: { latitude: lat, longitude: long } })
+  axios.post("http://192.168.18.55:8000/get-response", { query: query, location: { latitude: lat, longitude: long } })
     .then(async (response) => {
       console.log("Response: ", response.data);
       if (response.data.intent === "search volunteer with good rating") {

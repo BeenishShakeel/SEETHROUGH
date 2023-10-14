@@ -84,7 +84,7 @@ function Root({ navigation }) {
 export default function App() {
   return (
     <NavigationContainer>
-      <Stack.Navigator screenOptions={{ headerShown: false }} initialRouteName='SignUp'>
+      <Stack.Navigator screenOptions={{ headerShown: false }} initialRouteName='open'>
         <Stack.Screen name="open" component={Open} />
         <Stack.Screen name="voiceOperations" component={VoiceOperations} />
         <Stack.Screen name="gps" component={Gps} />
