@@ -22,7 +22,8 @@ import SplashScreen from './screens/splashscreen';
 import Video from './screens/video';
 import ContactsList from './src/ContactList';
 import Contact from './src/Contact';
-import VoiceOperations from "./src/Clock"
+import VoiceOperations from "./src/Clock";
+import messaging from "@react-native-firebase/messaging"
 
 function onMessageReceived(message, navigation) {
   console.log("Notification data: ", message.data);
@@ -83,7 +84,7 @@ function Root({ navigation }) {
 export default function App() {
   return (
     <NavigationContainer>
-      <Stack.Navigator screenOptions={{ headerShown: false }} initialRouteName='Root'>
+      <Stack.Navigator screenOptions={{ headerShown: false }} initialRouteName='SignUp'>
         <Stack.Screen name="open" component={Open} />
         <Stack.Screen name="voiceOperations" component={VoiceOperations} />
         <Stack.Screen name="gps" component={Gps} />

@@ -10,6 +10,7 @@ import Icon from "react-native-vector-icons/Ionicons";
 import { colors } from "../assets/constants/colors";
 import axios from "axios";
 import firestore from '@react-native-firebase/firestore';
+import AsyncStorage from "@react-native-async-storage/async-storage";
 
 //        <ImageBackground
 // source={require('../assets/images/new4.jpg')}
