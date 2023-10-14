@@ -9,6 +9,7 @@ import TextField from "./textField";
 import Icon from "react-native-vector-icons/Ionicons";
 import { colors } from "../assets/constants/colors";
 import axios from "axios";
+import firestore from '@react-native-firebase/firestore';
 
 //        <ImageBackground
 // source={require('../assets/images/new4.jpg')}
@@ -32,35 +33,32 @@ export default function Aboutus({ navigation }) {
 
   useEffect(() => {
     const getFcmToken = async () => {
-      await messaging().registerDeviceForRemoteMessages();
-      const fcmToken = await messaging().getToken();
-      if(fcmToken){
-        console.log("FCM Token: ", fcmToken);
-        axios.post("http://192.168.18.11:8000/notify", {deviceId: fcmToken})
-        .then(res => {
-          console.log("Data: ", res.data);
-        })
-        .catch(err => console.error(err));
-      }
-      else{
-        console.log("No FCM Token");
+      try {
+        const userString = await AsyncStorage.getItem('userId');
+        if (userString !== null) {
+          console.log('Volunteer ID:', userString);
+          await messaging().registerDeviceForRemoteMessages();
+          const fcmToken = await messaging().getToken();
+          if (fcmToken) {
+            console.log("FCM Token: ", fcmToken);
+            await firestore().collection('users').doc(userString).update({ deviceID: fcmToken });
+          }
+          else {
+            console.log("No FCM Token");
+          }
+        }
+      } catch (error) {
+        console.error(error);
       }
     }
-
     getFcmToken();
 
     const interval = setInterval(() => {
       setCurrentImageIndex((prevIndex) => (prevIndex + 1) % images.length);
     }, 3000); // Change image every 3 seconds
 
-    // const unsubscribe = messaging().onMessage(async remoteMessage => {
-    //   console.log(remoteMessage);
-    //   Alert.alert('A new FCM message arrived!', JSON.stringify(remoteMessage));
-    // });
-
     return () => {
       clearInterval(interval);
-      // unsubscribe();
     }
   }, []);
 

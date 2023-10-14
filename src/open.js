@@ -46,38 +46,29 @@ function detectIntentText(navigation, query, lat, long) {
       console.log("Response: ", response.data);
       if (response.data.intent === "search volunteer with good rating") {
         VolunteerSearchWithRating()
-        .then(userId => {
-          console.log("User ID: ", userId);
-          setupVideoCall(navigation, userId);
+        .then(user => {
+          console.log("User: ", user);
+          setupVideoCall(navigation, user);
         })
         .catch(err => console.error(err));
       }
       else if (response.data.intent === "search volunteer from contacts") {
         VolunteerSearchFromContacts()
-        .then(userId => {
-          console.log("User ID: ", userId);
-          setupVideoCall(navigation, userId);
+        .then(user => {
+          console.log("User: ", user);
+          setupVideoCall(navigation, user);
         })
         .catch(err => console.error(err));
       }
       else if (response.data.intent === "search volunteer with nearest location") {
         VolunteerSearchNearestLocation()
-        .then(userId => {
-          console.log("User ID: ", userId);
-          setupVideoCall(navigation, userId);
+        .then(user => {
+          console.log("User: ", user);
+          setupVideoCall(navigation, user);
         })
         .catch(err => console.error(err));
       }
-      if (userId) {
-        axios.post("http://192.168.18.11:8000/get-videoToken", { identity: userId , roomName: 'MY ROOM' })
-          .then(response => {
 
-          })
-      }
-
-      //console.log("lat:", lat)
-      //console.log("long:", long)
-      //console.log("res: ", response.data);
       if (response.data) {
         Tts.speak(response.data.responses[0].text.text[0]);
       }
