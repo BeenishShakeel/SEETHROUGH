@@ -1,7 +1,5 @@
 import React, { useState, useEffect } from "react";
 import { Text, View, StyleSheet, TouchableOpacity, ToastAndroid } from "react-native";
-import Background2 from "./background2";
-import Btn1 from "../assets/buttons/btn1";
 import TextField2 from "./textField2";
 import { SelectList } from 'react-native-dropdown-select-list';
 import Icon from "react-native-vector-icons/Ionicons";
@@ -9,9 +7,7 @@ import { colors } from "../assets/constants/colors";
 import MaterialIcons from "react-native-vector-icons/MaterialIcons";
 import auth from '@react-native-firebase/auth';
 import firestore from '@react-native-firebase/firestore';
-import database from '@react-native-firebase/database';
 import Geolocation from 'react-native-geolocation-service';
-import { request, PERMISSIONS } from '@react-native-permissions'; // Import the necessary functions
 import AsyncStorage from "@react-native-async-storage/async-storage";
 
 export default function SignUp({ navigation }) {
@@ -31,24 +27,22 @@ export default function SignUp({ navigation }) {
   const [rating, setRating] = useState(0.0)
 
   useEffect(() => {
-    Geolocation.getCurrentPosition(
-      (position) => {
-        const { latitude, longitude } = position.coords;
-        console.log(position);
-        setLocation({ latitude, longitude });
-      },
-      (error) => {
-        // See error code charts below.
-        console.log(error.code, error.message);
-      },
-      { enableHighAccuracy: true, timeout: 15000, maximumAge: 10000 }
-    );
+    // Geolocation.getCurrentPosition(
+    //   (position) => {
+    //     const { latitude, longitude } = position.coords;
+    //     console.log(position);
+    //     setLocation({ latitude, longitude });
+    //   },
+    //   (error) => {
+    //     // See error code charts below.
+    //     console.log(error.code, error.message);
+    //   },
+    //   { enableHighAccuracy: true, timeout: 15000, maximumAge: 10000 }
+    // );
   }, []);
 
   function SignUpAuth() {
     if (password === confirmPassword) {
-      const randomRating = Math.floor(Math.random() * 11);
-      const rating = (randomRating * 0.5).toFixed(1);
       auth()
         .createUserWithEmailAndPassword(email, password)
         .then(async (response) => {
@@ -61,8 +55,8 @@ export default function SignUp({ navigation }) {
               phoneNumber: phoneNumber,
               email: email,
               language: language,
-              rating: rating,
-              location: location,
+              rating: 5,
+              location: location
             })
             .then(() => {
               ToastAndroid.show("User Created Successfully", ToastAndroid.SHORT);
