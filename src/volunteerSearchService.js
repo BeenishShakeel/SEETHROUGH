@@ -10,7 +10,10 @@ export const VolunteerSearchWithRating = async () => {
       .get()
       .then(querySnapshot => {
         querySnapshot.forEach(documentSnapshot =>{
-          return resolve(documentSnapshot.id)
+          return resolve({
+            userID: documentSnapshot.id,
+            deviceID: documentSnapshot.data().deviceID
+          });
         });
           return resolve(null);    
         })
@@ -34,8 +37,10 @@ export const VolunteerSearchFromContacts = () => {
             .get()
             .then(querySnapshot => {
               querySnapshot.forEach(documentSnapshot => {
-                console.log("QQQQ ", documentSnapshot)
-                return resolve(documentSnapshot.id);
+                return resolve({
+                  userID: documentSnapshot.id,
+                  deviceID: documentSnapshot.data().deviceID
+                });
               });
               return resolve(null);
             })
@@ -55,6 +60,7 @@ export const VolunteerSearchNearestLocation = async () => {
     let v_longitude = 0;
     let i = 0;
     let nearestVolunteerId = null;
+    let nearestVolunteerDeviceID = null;
     let minDistance = Number.MAX_VALUE;
 
     firestore().collection('blind')
@@ -83,9 +89,13 @@ export const VolunteerSearchNearestLocation = async () => {
           if (distance < minDistance) {
             minDistance = distance;
             nearestVolunteerId = documentSnapshot.id;
+            nearestVolunteerDeviceID = documentSnapshot.data().deviceID;
           }
         })
-        resolve(nearestVolunteerId);
+        resolve({
+          userID: nearestVolunteerId,
+          deviceID: nearestVolunteerDeviceID
+        });
       })
       .catch(err => reject(err));
 
