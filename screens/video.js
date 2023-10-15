@@ -13,14 +13,18 @@ import{
     Button
     } from 'react-native';
 import Tts from 'react-native-tts';
+// import axios from 'axios';
+// import auth from '@react-native-firebase/auth';
+// import database from '@react-native-firebase/database';
 
-const Video = ({navigation}) => {
+
+const Video = ({navigation, route}) => {
   const [isAudioEnabled, setIsAudioEnabled] = useState(true);
   const [isVideoEnabled, setIsVideoEnabled] = useState(true);
   const [status, setStatus] = useState('disconnected');
   const [participants, setParticipants] = useState(new Map());
   const [videoTracks, setVideoTracks] = useState(new Map());
-  const [token, setToken] = useState('eyJ0eXAiOiJKV1QiLCJhbGciOiJIUzI1NiIsImN0eSI6InR3aWxpby1mcGE7dj0xIn0.eyJqdGkiOiJTSzRmMTk0ZWViMTI3OWYwMjg0ZmY3MTk4Y2Y2NGIwYzU4LTE2ODQ5MTg5MzkiLCJpc3MiOiJTSzRmMTk0ZWViMTI3OWYwMjg0ZmY3MTk4Y2Y2NGIwYzU4Iiwic3ViIjoiQUNlNjYwNjE2MjBkZjczYjk0MjQ1MWVmZTA3Yzc2OTA0ZiIsImV4cCI6MTY4NDkyMjUzOSwiZ3JhbnRzIjp7ImlkZW50aXR5IjoiYmVlbmlzaCIsInZpZGVvIjp7InJvb20iOiJ0cmlhbCJ9fX0.LOUf0qky_gatxTdo1HqeYxqqhnsH0XV3lhy5mlF2Jvs ');
+  const [token, setToken] = useState(route.params.token);
   const twilioRef = useRef(null);
 
   const _onConnectButtonPress = () => {

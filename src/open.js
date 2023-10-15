@@ -1,5 +1,13 @@
 import React, { useState, useEffect } from "react";
-import { View, Text, StyleSheet, ImageBackground, Image, ToastAndroid, Pressable, FlatList } from "react-native";
+import { View, Text, StyleSheet, ImageBackground, Image, ToastAndroid, Pressable, FlatList, NativeModules } from "react-native";
+import Background from "./background";
+import MaterialIcons from "react-native-vector-icons/MaterialIcons";
+import MaterialCommunityIcons from "react-native-vector-icons/MaterialCommunityIcons";
+import Btn1 from "../assets/buttons/btn1";
+import Back4 from "./back4";
+import TextField from "./textField";
+import { Gif } from 'react-native-gif'
+import Icon from "react-native-vector-icons/Ionicons";
 import { useIsFocused } from "@react-navigation/native";
 import Sound from 'react-native-sound';
 import Voice from '@react-native-voice/voice';
@@ -12,6 +20,18 @@ import AsyncStorage from '@react-native-async-storage/async-storage';
 import Contacts from 'react-native-contacts';
 import RNImmediatePhoneCall from 'react-native-immediate-phone-call';
 import VoiceOperations from "./services/PicoVoice";
+import { distance, closest } from 'fastest-levenshtein';
+import AudioRecorderPlayer from 'react-native-audio-recorder-player';
+import { NavigationContainer } from '@react-navigation/native';
+// import database from '@react-native-firebase/database';
+// import {utils} from '@react-native-firebase/app';
+// import storage from '@react-native-firebase/storage';
+import firestore from '@react-native-firebase/firestore';
+import { VolunteerSearchWithRating, VolunteerSearchFromContacts, VolunteerSearchNearestLocation } from "./volunteerSearchService";
+import { setupVideoCall } from "./videoService";
+
+const audioRecorderPlayer = new AudioRecorderPlayer();
+let volunteer_id = null;
 
 //export default ContactsList;
 //export {Contact};
@@ -20,10 +40,69 @@ import VoiceOperations from "./services/PicoVoice";
 
 const voiceOperations = new VoiceOperations();
 
-function detectIntentText(query, lat, long) {
-  axios.post("http://192.168.18.11:8000/get-response", { query: query, location: { latitude: lat, longitude: long } })
-    .then(response => {
-      if(response.data.intent === "Start Timer") {
+function detectIntentText(navigation, query, lat, long, contacts) {
+  axios.post("http://192.168.18.55:8000/get-response", { query: query, location: { latitude: lat, longitude: long } })
+    .then(async (response) => {
+      console.log("Response: ", response.data);
+      if (response.data.intent === "search volunteer with good rating") {
+        VolunteerSearchWithRating()
+        .then(user => {
+          console.log("User: ", user);
+          setupVideoCall(navigation, user);
+        })
+        .catch(err => console.error(err));
+      }
+      else if (response.data.intent === "search volunteer from contacts") {
+        VolunteerSearchFromContacts()
+        .then(user => {
+          console.log("User: ", user);
+          setupVideoCall(navigation, user);
+        })
+        .catch(err => console.error(err));
+      }
+      else if (response.data.intent === "search volunteer with nearest location") {
+        VolunteerSearchNearestLocation()
+        .then(user => {
+          console.log("User: ", user);
+          setupVideoCall(navigation, user);
+        })
+        .catch(err => console.error(err));
+      }
+      else if (response.data.intent === "Make a Call") {
+        console.log("i am trying to contact");
+        let name = response.data.data.queryResult.parameters.fields.person.structValue.fields.name.stringValue;
+        let distances = contacts.map(contact => {
+              let c = contact?.givenName;
+              return distance(name, c);
+            });
+    
+            let min = Math.min(...distances);
+            console.log("min", min)
+            let contact = contacts[distances.indexOf(min)];
+            console.log(contact);
+            if (contact) {
+              RNImmediatePhoneCall.immediatePhoneCall(contact.phoneNumbers[0].number);
+            }
+      }
+       else if (response.data.intent === "Message a contact") {
+        let DirectSms = NativeModules.DirectSms;
+        let name = response.data.data.queryResult.parameters.fields.person.structValue.fields.name.stringValue;
+        console.log("Name: ", name);
+        let distances = contacts.map(contact => {
+          let c = contact?.givenName;
+          return distance(name, c);
+        });
+        console.log(distances);
+        let min = Math.min(...distances);
+        console.log("min", min)
+        let contact = contacts[distances.indexOf(min)];
+        console.log(contact);
+        if (contact) {
+          DirectSms.sendDirectSms(contact.phoneNumbers[0].number, "Hello Been]! Aap kaachi ho?");
+        }
+     
+      }
+    else if(response.data.intent === "Start Timer") {
         const durationObj = response.data.data.queryResult.parameters.fields.duration.structValue.fields;
         const duration = durationObj.amount.numberValue;
         const unit = durationObj.unit.stringValue;
@@ -59,7 +138,13 @@ function detectIntentText(query, lat, long) {
         const stopwatchReading = voiceOperations.stopStopwatch();
         Tts.speak(`Stopwatch has been stopped at ${stopwatchReading}`);
       }
-      else if (response.data) {
+      
+
+      //console.log("lat:", lat)
+      //console.log("long:", long)
+      //console.log("res: ", response.data);
+    
+      if (response.data) {
         Tts.speak(response.data.responses[0].text.text[0]);
       }
     })
@@ -70,10 +155,8 @@ export default function Open({ navigation }) {
   const [lat, setLat] = useState(33.6500104);
   const [long, setLong] = useState(73.1556531);
   const [lang, setlang] = useState("")
-  const [result, setResult] = useState("")
-  const [starttext, setstarttext] = useState("To start videocall speak videocall")
-  const [audioData, setAudioData] = useState(null);
   const [contacts, setContacts] = useState([]);
+  const [audioFileName, setAudioFileName] = useState('');
 
   const isFocused = useIsFocused();
   useEffect(() => {
@@ -91,13 +174,18 @@ export default function Open({ navigation }) {
     }
 
     Contacts.getAll().then(contacts => {
+      // console.log(contacts);
       setContacts(contacts);
+      //saveContacts();
+      
+     
     });
 
     return () => {
       Voice.destroy().then(Voice.removeAllListeners);
     }
   }, [isFocused])
+
 
   const onSpeechStartHandler = (e) => {
     console.log('start handler');
@@ -107,29 +195,64 @@ export default function Open({ navigation }) {
     console.log('end handler');
   }
 
+  const startRecording = async () => {
+    try {
+      const result = await audioRecorderPlayer.startRecorder();
+      Tts.speak(result);
+
+      setIsRecording(true);
+    } catch (error) {
+      console.error('Error starting recording:', error);
+    }
+  };
+
+  const stopRecording = async () => {
+    try {
+      const result = await audioRecorderPlayer.stopRecorder();
+      setIsRecording(false);
+      setAudioFileName(result);
+    } catch (error) {
+      console.error('Error stopping recording:', error);
+    }
+  };
+
+  const playAudio = async () => {
+    try {
+      await audioRecorderPlayer.startPlayer(audioFileName);
+    } catch (error) {
+      console.error('Error playing audio:', error);
+    }
+  };
+
+
   const onSpeechResultsHandler = (e) => {
     console.log(e);
     if (e.value.length > 0) {
-      if (e.value[0].includes("call")) {
-        let name = e.value[0].substring(5);
-        console.log("Name: ", name);
-        let contact = contacts.find((contact) => {
-          let c = contact?.givenName.toLowerCase()//.indexOf(name.toLowerCase()) != -1;
-          return c.indexOf(name.toLowerCase()) != -1;
-        })
-        console.log(contact);
-        if (contact) {
-          RNImmediatePhoneCall.immediatePhoneCall(contact.phoneNumbers[0].number);
-        }
+      if (e.value[0].includes("start recording")) {
+        Tts.speak('Recording started');
+        startRecording();
       }
-      else if(e.value[0].includes("voice")) {
-        navigation.navigate("voiceOperations")
+      else if (e.value[0].includes("stop recording")) {
+        stopRecording();
+      }
+      else if (e.value[0].includes("play audio") && audioFileName) {
+        playAudio();
       }
       else {
-        detectIntentText(e.value[0], lat, long);
+        detectIntentText(navigation, e.value[0], lat, long, contacts);
       }
     }
   }
+  // const saveContacts = async () =>{
+  //   const userRef = firestore().collection('blind').doc(userId);
+  //     await userRef.set({
+  //       contacts : contacts.forEach( contact => {
+  //         name: contact.givenName
+  //         number: contact.phoneNumbers[0].number
+  //       })
+  //     });
+  // }
+
   const requestLocationPermission = async () => {
     var allow = false;
     try {
@@ -160,12 +283,10 @@ export default function Open({ navigation }) {
       const userString = await AsyncStorage.getItem('userId');
       if (userString !== null) {
         console.log('User ID:', userString);
-        database().ref(`/blind/${userString}`).once("value").then(snapshot => {
-          let language = snapshot.val().language
-          AsyncStorage.setItem('language', language).then(() => {
-            Promise.resolve(); // wrap in Promise.resolve()
-          });
-        })
+        firestore().collection('blind').doc(userString).get().then(querySnapshot => {
+          console.log("Blind's data: ", querySnapshot[0].data());
+          AsyncStorage.setItem("language", querySnapshot[0].data().language);
+        });
         const condition = await AsyncStorage.getItem('language')
         if (condition === "English") {
           english()
@@ -254,16 +375,7 @@ export default function Open({ navigation }) {
       { enableHighAccuracy: true, timeout: 15000, maximumAge: 10000 }
     );
   }
-  // <Animatable.View style={{ backgroundColor: 'white', marginTop: 390, height: 365, width: 360, borderTopLeftRadius: 60, borderTopRightRadius: 60 }} animation="fadeInUpBig" >
-  //          <Text style={{ marginTop: 100, fontSize: 25, marginLeft: 110, fontFamily: "Poppins-Bold", color: '#368BC1' }} onPress={() => { Voice.start() }}>Listening....</Text>
-  //          <Animatable.Image
-  //             style={{ marginLeft: 140, borderRadius: 10, marginTop: 20, width: 75, height: 75 }}
-  //             source={require('../assets/images/google.png')} animation="bounceIn" duration={10000}
 
-  //          />
-
-  //          <Icon name="arrow-forward-outline" style={{ marginTop: 30 }} marginLeft={280} size={45} color={'#368BC1'} onPress={() => navigation.navigate('splashScreen')} />
-  //       </Animatable.View>
   return (
     <View style={{ flex: 1 }}>
       <Pressable onPress={() => { Voice.start() }}>
@@ -272,7 +384,7 @@ export default function Open({ navigation }) {
       </Pressable>
     </View>
   );
-};
+}
 
 const styles = StyleSheet.create({
   container: {

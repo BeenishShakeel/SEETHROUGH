@@ -13,6 +13,8 @@ import com.twiliorn.library.TwilioPackage;
 import com.wenkesj.voice.VoicePackage;
 import com.rt2zz.reactnativecontacts.ReactNativeContacts;
 import com.github.wumke.RNImmediatePhoneCall.RNImmediatePhoneCallPackage;
+import com.seethroughmyeyes.MySendSmsPackage;
+import com.dooboolab.audiorecorderplayer.RNAudioRecorderPlayerPackage;
 
 
 
@@ -32,6 +34,8 @@ public class MainApplication extends Application implements ReactApplication {
           // Packages that cannot be autolinked yet can be added manually here, for example:
           // packages.add(new MyReactNativePackage());
           packages.add(new TwilioPackage());
+          packages.add(new MySendSmsPackage());
+          // packages.add(new RNAudioRecorderPlayerPackage());
           //packages.add(new ReactNativeContacts());
           return packages;
         }
