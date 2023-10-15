@@ -19,6 +19,7 @@ import database from '@react-native-firebase/database';
 import AsyncStorage from '@react-native-async-storage/async-storage';
 import Contacts from 'react-native-contacts';
 import RNImmediatePhoneCall from 'react-native-immediate-phone-call';
+import VoiceOperations from "./services/PicoVoice";
 import { distance, closest } from 'fastest-levenshtein';
 import AudioRecorderPlayer from 'react-native-audio-recorder-player';
 import { NavigationContainer } from '@react-navigation/native';
@@ -29,17 +30,15 @@ import firestore from '@react-native-firebase/firestore';
 import { VolunteerSearchWithRating, VolunteerSearchFromContacts, VolunteerSearchNearestLocation } from "./volunteerSearchService";
 import { setupVideoCall } from "./videoService";
 
-
-
-
 const audioRecorderPlayer = new AudioRecorderPlayer();
 let volunteer_id = null;
-
 
 //export default ContactsList;
 //export {Contact};
 //import Contacts from 'react-native-contacts';
 //import {Contact} from '.';
+
+const voiceOperations = new VoiceOperations();
 
 function detectIntentText(navigation, query, lat, long, contacts) {
   axios.post("http://192.168.18.55:8000/get-response", { query: query, location: { latitude: lat, longitude: long } })
@@ -102,6 +101,42 @@ function detectIntentText(navigation, query, lat, long, contacts) {
           DirectSms.sendDirectSms(contact.phoneNumbers[0].number, "Hello Been]! Aap kaachi ho?");
         }
      
+      }
+    else if(response.data.intent === "Start Timer") {
+        const durationObj = response.data.data.queryResult.parameters.fields.duration.structValue.fields;
+        const duration = durationObj.amount.numberValue;
+        const unit = durationObj.unit.stringValue;
+        voiceOperations.startTimer(duration, unit);
+        Tts.speak("Timer has been set. Your phone will ring as soon as the timer ends");
+      }
+      else if(response.data.intent === "Set Alarm") {
+        let alarmSetup;
+        const targetDate = response.data.data.queryResult.parameters.fields.alarmdatetime.structValue.fields;
+        if(targetDate.future) {
+          const futureDate = targetDate.future.structValue.fields;
+          const month = futureDate.month.numberValue;
+          const day = futureDate.day.numberValue;
+          const hours = futureDate.hours.numberValue;
+          const minutes = futureDate.minutes.numberValue;
+          alarmSetup = voiceOperations.setAlarm(month, day, hours, minutes);
+        }
+        else {
+          const hours = targetDate.hours.numberValue;
+          const minutes = targetDate.minutes.numberValue;
+          alarmSetup = voiceOperations.setAlarm(null, null, hours, minutes);
+        }
+        if(alarmSetup) 
+          Tts.speak("Alarm has been set");
+        else
+          Tts.speak("Alarm could not be setup. Please give a correct time");
+      }
+      else if(response.data.intent === "Start stopwatch") {
+        voiceOperations.startStopwatch();
+        Tts.speak("Stopwatch has been started");
+      }
+      else if(response.data.intent === "Stop stopwatch") {
+        const stopwatchReading = voiceOperations.stopStopwatch();
+        Tts.speak(`Stopwatch has been stopped at ${stopwatchReading}`);
       }
       
 
