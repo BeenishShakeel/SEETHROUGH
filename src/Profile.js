@@ -22,7 +22,9 @@ export default function Profile({navigation}){
   const [userId, setUserId] =useState("")
   const [phoneNumber, setphonenumber] = useState("")
   const[rating,setrating] = useState(0.0);
+  const [isActive, setIsActive] = useState(false);
   
+ 
   /*async function fetchData() {
     try {
       const value = await AsyncStorage.getItem("uid")
@@ -55,7 +57,8 @@ async function fetchData() {
         .then((documentSnapshot) => {
           if (documentSnapshot.exists) {
             const userData = documentSnapshot.data();
-
+            const isActiveValue = userData.isActive; 
+            setIsActive(isActiveValue);
             if (userData) {
               const { firstName, lastName, email, phoneNumber , rating } = userData;
               const name = firstName + ' ' + lastName;
@@ -73,6 +76,22 @@ async function fetchData() {
     }
   } catch (error) {
     console.log(error);
+  }
+}
+async function toggleActiveStatus() {
+  try {
+   
+    setIsActive((prevIsActive) => !prevIsActive);
+
+    
+    const value = await AsyncStorage.getItem("uid");
+    if (value !== null) {
+      await firestore().collection('users').doc(value).update({
+        isActive: !isActive, // Toggle the value
+      });
+    }
+  } catch (error) {
+    console.error('Error toggling active status:', error);
   }
 }
 
@@ -153,14 +172,23 @@ async function deleteaccount() {
       <View style = {{backgroundColor:'white' , flex:1 }}>
     <View style = {{borderBottomLeftRadius:30}}>
     <View style = {styles.image}>
-         
-          <View style ={{flexDirection:'column' , marginLeft:140}}>
+    <View style={{ flexDirection: 'row' }}>
+    <View style={{ backgroundColor: isActive ? 'green' : 'red',  width: 35, height: 35, marginTop:6, marginLeft:10, borderRadius: 20 }}>
+    <MaterialIcons style={{ marginTop: 5, marginLeft: 7 }} name={isActive ? 'check' : 'close'} size={22} color={'white'} onPress={toggleActiveStatus} />
+  </View>
+  <Text style={{ fontSize: 15, marginTop: 12, marginLeft: 4, fontFamily: "Poppins-SemiBold", color: 'white' }}> Active</Text>
+          <View style ={{flexDirection:'column' , marginLeft:45 ,marginTop:2}}>
           <Icon name="log-out-outline" style={{ height: 30, width: 30, marginLeft: 170 }}
             size={35} color={'white'} onPress={LogOut}/>
             <Text style = {{ marginLeft : 160 ,fontFamily: 'Poppins-SemiBoldItalic',color:'white' , fontSize:13}}>
               LogOut
             </Text>
             </View>
+           
+            </View>
+  
+
+
             <View style ={{ width:20}}>
             <Image
        source={require('../assets/images/pro.png')}

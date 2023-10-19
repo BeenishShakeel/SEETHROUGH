@@ -27,18 +27,7 @@ export default function SignUp({ navigation }) {
   const [rating, setRating] = useState(0.0)
 
   useEffect(() => {
-    // Geolocation.getCurrentPosition(
-    //   (position) => {
-    //     const { latitude, longitude } = position.coords;
-    //     console.log(position);
-    //     setLocation({ latitude, longitude });
-    //   },
-    //   (error) => {
-    //     // See error code charts below.
-    //     console.log(error.code, error.message);
-    //   },
-    //   { enableHighAccuracy: true, timeout: 15000, maximumAge: 10000 }
-    // );
+    
   }, []);
 
   function SignUpAuth() {
@@ -47,6 +36,13 @@ export default function SignUp({ navigation }) {
         .createUserWithEmailAndPassword(email, password)
         .then(async (response) => {
           await AsyncStorage.setItem('userId', response.user.uid);
+          const characters = 'ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789';
+          let randomId = '';
+        
+          for (let i = 0; i < 10; i++) {
+            const randomIndex = Math.floor(Math.random() * 10);
+            randomId += characters.charAt(randomIndex);
+          }
           const userRef = firestore().collection('users').doc(response.user.uid);
           userRef
             .set({
@@ -56,7 +52,10 @@ export default function SignUp({ navigation }) {
               email: email,
               language: language,
               rating: 5,
-              location: location
+              location: location,
+              isActive:true,
+              isEngaged:false
+           
             })
             .then(() => {
               ToastAndroid.show("User Created Successfully", ToastAndroid.SHORT);
@@ -115,7 +114,7 @@ export default function SignUp({ navigation }) {
         <TextField2 placeholder="Email" keyboardType="email-address" name="mail-outline" onChangeText={setEmail} value={email} />
         <TextField2 placeholder="Password" name="lock" secureTextEntry={true} onChangeText={setPassword} value={password} />
         <TextField2 placeholder="Confirm Password" secureTextEntry={true} name="lock" onChangeText={setConfirmPassword} value={confirmPassword} />
-        <TextField2 placeholder="Phone Number" name="numeric" onChangeText={setPhoneNumber} value={phoneNumber}
+        <TextField2 placeholder="Phone Number" name="phone" onChangeText={setPhoneNumber} value={phoneNumber}
         />
 
         <SelectList

@@ -12,47 +12,82 @@ import Icon from "react-native-vector-icons/Ionicons";
 import MaterialIcons from "react-native-vector-icons/MaterialIcons";
 import database from '@react-native-firebase/database';
 import AsyncStorage from '@react-native-async-storage/async-storage';
+import {firestore , doc} from '@react-native-firebase/firestore';
 
 
 export default function Userdetail({navigation}){
     const[user,setUser] = useState([]);
     const[userId,setUserId] = useState("");
-    function fetchData() {
-        let tempdata = [];
-        try {
-          database().ref('/users/').once('value').then((snap) => {
-             console.log("snap values " )
-             console.log(snap.val())
-            setUser(Object.values(snap.val()))
-        
-            console.log("user value " )
-            console.log(user)
+      const [users, setUsers] = useState([]);
+      const groupUsersByRating = (usersData) => {
+        const groupedUsers = {};
+        usersData.forEach((user) => {
+          const rating = user.rating;
+          if (!groupedUsers[rating]) {
+            groupedUsers[rating] = [];
           }
-          )
-        } catch (error) {
-          console.log(error)
+          groupedUsers[rating].push(user);
+        });
+    
+        // Create a flattened array
+        const result = [];
+        for (const rating in groupedUsers) {
+          if (groupedUsers.hasOwnProperty(rating)) {
+            result.push(...groupedUsers[rating]);
+          }
         }
-      }
+    
+        return result;
+      };
+    async function fetchData() {
+    try {
+      const usersSnapshot = await firestore().collection('users').orderBy('rating', 'desc').get();
+      const usersData = usersSnapshot.docs.map((doc) => doc.data());
+      const groupedUsers = groupUsersByRating(usersData);
+      setUsers(groupedUsers);
+     
+    } catch (error) {
+      console.error(error);
+    }
+  }
+
     
       useEffect(() => {
         fetchData()
       }, [])
 
+      async function deleteaccount(id) {
+        if (id !== null) {
+          try {
+            const docRef = firestore().collection('users').doc(id);
       
-        function deleteaccount(id){
+            // Get the document data along with its ID
+            const docSnapshot = await docRef.get();
       
-        database().ref(`/users/${id}`).
-        remove().
-        then(
-            ()=> {
-                // ToastAndroid.show("Deleted  Successfully!", ToastAndroid.SHORT)
-               
-               
+            if (docSnapshot.exists) {
+              const documentData = docSnapshot.data();
+              const documentId = docSnapshot.id;
+      
+              // Delete the document
+              await firestore().collection('users').doc(documentId).delete();
+      
+              // Remove the UID from AsyncStorage
+              await AsyncStorage.removeItem("uid");
+      
+              ToastAndroid.show("Deleted Successfully!", ToastAndroid.SHORT);
+              
+            } else {
+              console.log("Document does not exist");
             }
-        ).catch((error)=> ToastAndroid.show(error.message, ToastAndroid.SHORT))
-       
-        ToastAndroid.show("Deleted  Successfully!", ToastAndroid.SHORT)
-    }
+          } catch (error) {
+            ToastAndroid.show(error.message, ToastAndroid.SHORT);
+          }
+        }
+      }
+      
+      
+      
+   
       const url = "https://www.vecteezy.com/vector-art/606261-eye-logo-vector"
       const share = async() =>
       {
@@ -87,17 +122,15 @@ export default function Userdetail({navigation}){
           source={require('../assets/images/pro.png')}
         />
         <View style = {{flexDirection:'row'}}>
-         <View style={{ marginTop: 2, flexDirection: 'column' }}>
+         <View style={{ marginTop: 20, flexDirection: 'column' }}>
 
-          <Text style={{ fontFamily: 'Poppins-SemiBold', color: '#1F4A83', fontSize: 17, marginTop: 10, marginLeft: 10 }}>
-            Hello
-          </Text>
-          <Text style={{ fontFamily: 'Poppins-SemiBold', color: '#1F4A83', fontSize: 16, marginLeft: 10 }}>
+       
+          <Text style={{ fontFamily: 'Poppins-SemiBold', color: '#1F4A83', fontSize: 18, marginLeft: 10 }}>
             Admin
           </Text>
         </View>
-        <View style = {{width:50 , height:50 ,marginLeft:150, backgroundColor:'#1F4A83', borderRadius:10}}>
-         <MaterialIcons  style = {{marginTop:8 , marginLeft:10}} name="share" size = {30} color= {'white'}  onPress={()=>share()}></MaterialIcons>
+        <View style = {{width:40 , height:40 ,marginLeft:163, marginTop:8, backgroundColor:'#1F4A83', borderRadius:10}}>
+         <MaterialIcons  style = {{marginTop:8 , marginLeft:8}} name="share" size = {24} color= {'white'}  onPress={()=>share()}></MaterialIcons>
         </View>
         </View>
         </View>
@@ -117,8 +150,8 @@ export default function Userdetail({navigation}){
           </View>
          
           <FlatList
-            data={user}
-            KeyExtractor={(item, index) => item.key}
+            data={users}
+            keyExtractor={(item, index) => item.id}
             renderItem={({ item}) =>
             
                 <View style={{ marginTop: 30, flexDirection: 'column' }}>
@@ -129,22 +162,37 @@ export default function Userdetail({navigation}){
                 <View style={{flexDirection:'column'}}>
                   <View style ={{flexDirection:'row'}}>
 
-                    <Text style={{ fontFamily: 'Poppins-SemiBold', marginTop: 5, color: '#1F4A83', fontSize: 15, marginLeft: 15}}>
+                    <Text style={{ fontFamily: 'Poppins-SemiBold', marginTop: 5, color: '#1F4A83', fontSize: 15, marginLeft: 10}}>
                       {item.firstName}
                       </Text>
                       <Text style={{ fontFamily: 'Poppins-SemiBold', marginTop: 5, color: '#1F4A83', fontSize: 15, marginLeft: 5}}>
                       {item.lastName}
                       </Text>
+                      <Icon name= 'star' size={15} color={'gold'} style={{marginLeft:195 , marginTop:8 , position:'absolute'}} />
+                      <Text
+                  style={{
+                    position:'absolute',
+                    fontFamily: 'Poppins-SemiBold',
+                    marginTop: 5,
+                    color: '#565654',
+                    fontSize: 15,
+                    marginLeft: 211,
+                  }}
+                >
+                        Rating : {item.rating}
+                </Text>
                      
                     </View>    
-                    <Text style={{ fontFamily: 'Poppins-SemiBold',  color: '#1F4A83', fontSize: 15, marginLeft: 15}}>
+                    <Text style={{ fontFamily: 'Poppins-SemiBold',  color: '#1F4A83', fontSize: 15, marginLeft: 10}}>
                       {item.email}
                       </Text>    
                       </View>              
                     
                     
                    <View style ={{position:'absolute'}}>
-                     <TouchableOpacity   style={{ marginTop:28,marginLeft:280, width: 70,height : 30 , margin: 15  ,borderRadius:3, backgroundColor:'#B21807'}}
+                     <TouchableOpacity   style={{ marginTop:28,marginLeft:275, width: 75
+                      
+                      ,height : 30 , margin: 15  ,borderRadius:8, backgroundColor:'#B21807'}}
                        onPress={() => Alert.alert(
                         "Delete User",
                         "Are you sure you want to Delete this user",
@@ -155,23 +203,22 @@ export default function Userdetail({navigation}){
                             style: "cancel"
                           },
                           {
-                            text: "Yes", onPress: () => {
-                              // let value = 3
-                              // let arr = [1, 2, 3, 4, 5, 3]
-                              let tempData = user.filter(itemm => itemm !== item)
-      
-                              setUser(tempData)
-                              console.log(tempData)
-      
-                              database().ref('/users').set(tempData).then((res) => {
-                                ToastAndroid.show("User Deleted Successfully", ToastAndroid.SHORT)
-                              })
-                            }
+                            text: "Yes", onPress: async () => {
+                              try {
+                               console.log(item.id)
+                                deleteaccount(item.id);
+                              } 
+                              
+                         catch (error) {
+                                console.error(error);
+                                ToastAndroid.show("Error deleting user", ToastAndroid.SHORT);
+                              }
+                            },
                           }
                         ]
                       )}>
                    <View style = {{flexDirection:'row'}}>
-                   <Text style ={{fontFamily:'Poppins-SemiBold',   marginLeft : 15,fontSize:12 ,marginTop : 5,color :'white'}}>
+                   <Text style ={{fontFamily:'Poppins-SemiBold',   marginLeft : 20,fontSize:13 ,marginTop : 5,color :'white'}}>
                    Delete 
                    </Text>
                   

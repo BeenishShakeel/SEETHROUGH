@@ -15,9 +15,9 @@ import{
 import Tts from 'react-native-tts';
 import firestore from '@react-native-firebase/firestore';
 import Voice from '@react-native-voice/voice';
-import auth from '@react-native-firebase/auth';
-import { firebase } from '@react-native-firebase/messaging';
 import AsyncStorage from '@react-native-async-storage/async-storage';
+import Rev from '../src/rev';
+
 // import axios from 'axios';
 // import auth from '@react-native-firebase/auth';
 // import database from '@react-native-firebase/database';
