@@ -13,10 +13,15 @@ import{
     Button
     } from 'react-native';
 import Tts from 'react-native-tts';
+import firestore from '@react-native-firebase/firestore';
+import Voice from '@react-native-voice/voice';
+import AsyncStorage from '@react-native-async-storage/async-storage';
 import Rev from '../src/rev';
+
 // import axios from 'axios';
 // import auth from '@react-native-firebase/auth';
 // import database from '@react-native-firebase/database';
+
 
 
 const Video = ({navigation, route}) => {
@@ -26,8 +31,9 @@ const Video = ({navigation, route}) => {
   const [participants, setParticipants] = useState(new Map());
   const [videoTracks, setVideoTracks] = useState(new Map());
   const [token, setToken] = useState(route.params.token);
+  const [isAnswer, setIsAnswer] = useState(false);
   const twilioRef = useRef(null);
-
+ 
   const _onConnectButtonPress = () => {
     twilioRef.current.connect({ accessToken: token });
     setStatus('connecting');
@@ -51,13 +57,34 @@ const Video = ({navigation, route}) => {
     console.log('onRoomDidConnect: ', roomName);
     Tts.speak('Room connected successfully')
     setStatus('connected');
+    firestore().collection('users').doc(route.params.userID).update({isEngaged: true});
   };
 
-  const _onRoomDidDisconnect = ({ roomName, error }) => {
+  const onSpeechResultsHandler = async (e) => {
+    if(e.value.length > 0){
+      setIsAnswer(e.value[0]);
+      // if(isAnswer == 'yes'){
+      //   await firestore().collection('blind').doc(userID).update({
+      //     contacts: firestore.FieldValue.arrayUnion(route.params.userID)
+      // })
+      
+      //}
+    }
+    //navigation.goBack();
+    
+  }
+
+  const _onRoomDidDisconnect = async ({ roomName, error }) => {
     console.log('[Disconnect]ERROR: ', error);
 
     //setStatus('disconnected');
     Tts.speak('Room disconnected');
+    firestore().collection('users').doc(route.params.userID).update({isEngaged: false});
+    Voice.onSpeechResults = onSpeechResultsHandler;
+    Tts.speak("Do you want to add this volunteer in your contact list. Answer with yes or no.");
+    setTimeout(() => Voice.start(), 12000);
+    const userID = await AsyncStorage.getItem('userId');
+    // Tts.speak('contact added successfully');
     navigation.goBack();
   };
 
@@ -66,6 +93,7 @@ const Video = ({navigation, route}) => {
 
     //setStatus('disconnected');
     Tts.speak('Room disconnected');
+    firestore().collection('users').doc(route.params.userID).update({isEngaged: false})
     navigation.goBack();
   };
 
@@ -91,8 +119,18 @@ const Video = ({navigation, route}) => {
 
     setVideoTracks(videoTracksLocal);
   };
-  useEffect(()=>{
+  useEffect(() => {
+    // Voice.onSpeechResults = onSpeechResultsHandler;
+    // Tts.speak("Do you want to add this volunteer in your contact list. Answer with yes or no.");
+    // setTimeout(() => Voice.start(), 8000);
+    // if(isAnswer == 'yes'){
+    //   firestore().collection('blind').doc(userID).update({
+    //     contacts: firestore.FieldValue.arrayUnion(route.params.userID)
+    //   })
+    // }
     _onConnectButtonPress();
+   
+
   },[])
 
   return (
