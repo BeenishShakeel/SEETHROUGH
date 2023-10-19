@@ -25,6 +25,7 @@ import Contact from './src/Contact';
 import VoiceOperations from "./src/Clock";
 import messaging from "@react-native-firebase/messaging";
 import notifee from '@notifee/react-native';
+import Rev from './src/rev';
 import { Alert } from 'react-native';
 
 function onMessageReceived(message, navigation) {
@@ -88,7 +89,7 @@ function Root({ navigation }) {
 export default function App() {
   return (
     <NavigationContainer>
-      <Stack.Navigator screenOptions={{ headerShown: false }} initialRouteName='open'>
+      <Stack.Navigator screenOptions={{ headerShown: false }} initialRouteName='rev'>
         <Stack.Screen name="open" component={Open} />
         <Stack.Screen name="voiceOperations" component={VoiceOperations} />
         <Stack.Screen name="gps" component={Gps} />
@@ -103,6 +104,7 @@ export default function App() {
         <Stack.Screen name='Video' component={Video}></Stack.Screen>
         <Stack.Screen name='ContactList' component={ContactsList}></Stack.Screen>
         <Stack.Screen name='Contact' component={Contact}></Stack.Screen>
+        <Stack.Screen name='rev' component={Rev}></Stack.Screen>
       </Stack.Navigator>
     </NavigationContainer>
 
