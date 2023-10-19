@@ -51,7 +51,7 @@ export default function SignUp({ navigation }) {
               phoneNumber: phoneNumber,
               email: email,
               language: language,
-              rating: 5,
+              rating: 2,
               location: location,
               isActive:true,
               isEngaged:false

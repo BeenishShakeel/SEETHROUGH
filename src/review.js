@@ -1,6 +1,6 @@
 
 import React, {useState, useEffect} from "react";
-import {View, Text, StyleSheet ,TouchableOpacity, TextInput, Image ,Alert,ToastAndroid,ImageBackground} from "react-native";
+import {View, Text, StyleSheet ,TouchableOpacity, TextInput, Image ,Alert,ToastAndroid,ImageBackground, KeyboardAvoidingView} from "react-native";
 import Back3 from "./back3";
 import MaterialIcons from "react-native-vector-icons/MaterialIcons";
 import Btn1 from "../assets/buttons/btn1";
@@ -48,6 +48,7 @@ export default function Review({navigation}){
  
   const ReviewPopup = ({ isVisible, onClose }) => {
     return (
+      
       <Modal isVisible={isVisible} animationIn="bounceIn" animationOut="bounceOut">
         <Animatable.View animation="fadeInUp" style={styles.modalContent}>
           <Text style={styles.messageText}>Thank you for your review! {name}</Text>
@@ -192,6 +193,7 @@ function sendrating() {
 <Text style = {{fontFamily :"Poppins-Bold",
 color:'#1F4A83' , color:'white' ,  fontSize:20 , marginTop:20 , marginLeft:120}}>Give FeedBack</Text>
       </View>
+      <KeyboardAvoidingView>
 <View style ={{marginTop:20, flexDirection:'column'}}>
 
 <Text style = {{fontFamily :"Poppins-Bold",
@@ -218,8 +220,10 @@ onChangeText={handleFeedbackChange}
 </TouchableOpacity>
 <ReviewPopup isVisible={isPopupVisible} onClose={closePopup} />
 </View>
+</KeyboardAvoidingView>
 </View>
 </View>
+    
     
         )
 }

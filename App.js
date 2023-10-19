@@ -89,7 +89,7 @@ function Root({ navigation }) {
 export default function App() {
   return (
     <NavigationContainer>
-      <Stack.Navigator screenOptions={{ headerShown: false }} initialRouteName='rev'>
+      <Stack.Navigator screenOptions={{ headerShown: false }} initialRouteName='rev' >
         <Stack.Screen name="open" component={Open} />
         <Stack.Screen name="voiceOperations" component={VoiceOperations} />
         <Stack.Screen name="gps" component={Gps} />

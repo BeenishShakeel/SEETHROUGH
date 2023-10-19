@@ -12,7 +12,7 @@ import Icon from "react-native-vector-icons/Ionicons";
 import MaterialIcons from "react-native-vector-icons/MaterialIcons";
 import database from '@react-native-firebase/database';
 import AsyncStorage from '@react-native-async-storage/async-storage';
-import {firestore , doc} from '@react-native-firebase/firestore';
+import firestore from '@react-native-firebase/firestore';
 
 
 export default function Userdetail({navigation}){
@@ -39,53 +39,24 @@ export default function Userdetail({navigation}){
     
         return result;
       };
-    async function fetchData() {
-    try {
-      const usersSnapshot = await firestore().collection('users').orderBy('rating', 'desc').get();
-      const usersData = usersSnapshot.docs.map((doc) => doc.data());
-      const groupedUsers = groupUsersByRating(usersData);
-      setUsers(groupedUsers);
-     
-    } catch (error) {
-      console.error(error);
-    }
-  }
+      async function fetchData() {
+        try {
+          const usersSnapshot = await firestore().collection('users').orderBy('rating', 'desc').get();
+          const usersData = usersSnapshot.docs.map((doc) => ({
+            id: doc.id,
+            ...doc.data(),
+          }));
+          setUsers(usersData);
+        } catch (error) {
+          console.error(error);
+        }
+      }
 
     
       useEffect(() => {
         fetchData()
       }, [])
 
-      async function deleteaccount(id) {
-        if (id !== null) {
-          try {
-            const docRef = firestore().collection('users').doc(id);
-      
-            // Get the document data along with its ID
-            const docSnapshot = await docRef.get();
-      
-            if (docSnapshot.exists) {
-              const documentData = docSnapshot.data();
-              const documentId = docSnapshot.id;
-      
-              // Delete the document
-              await firestore().collection('users').doc(documentId).delete();
-      
-              // Remove the UID from AsyncStorage
-              await AsyncStorage.removeItem("uid");
-      
-              ToastAndroid.show("Deleted Successfully!", ToastAndroid.SHORT);
-              
-            } else {
-              console.log("Document does not exist");
-            }
-          } catch (error) {
-            ToastAndroid.show(error.message, ToastAndroid.SHORT);
-          }
-        }
-      }
-      
-      
       
    
       const url = "https://www.vecteezy.com/vector-art/606261-eye-logo-vector"
@@ -111,6 +82,18 @@ export default function Userdetail({navigation}){
           navigation.navigate("Login")
      
       }
+      const deleteuser = async (userId) => {
+        try {
+          await firestore().collection('users').doc(userId).delete();
+          // Remove the deleted user from the local state to reflect the change in your FlatList
+          setUsers((prevUsers) => prevUsers.filter((user) => user.id !== userId));
+          ToastAndroid.show('User deleted!', ToastAndroid.SHORT);
+        } catch (error) {
+          console.error(error);
+          ToastAndroid.show('Error deleting user', ToastAndroid.SHORT);
+        }
+      };
+      
     return(
        
 
@@ -204,10 +187,9 @@ export default function Userdetail({navigation}){
                           },
                           {
                             text: "Yes", onPress: async () => {
-                              try {
-                               console.log(item.id)
-                                deleteaccount(item.id);
-                              } 
+                              try{
+                                deleteuser(item.id)
+                              }
                               
                          catch (error) {
                                 console.error(error);

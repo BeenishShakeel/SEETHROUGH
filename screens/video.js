@@ -58,7 +58,7 @@ const Video = ({navigation, route}) => {
 
     //setStatus('disconnected');
     Tts.speak('Room disconnected');
-    navigation.goBack();
+    navigation.navigate('rev');
   };
 
   const _onRoomDidFailToConnect = error => {
