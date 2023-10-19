@@ -156,10 +156,12 @@ export default function Open({ navigation }) {
         else if (response.data.intent === "Start stopwatch") {
           voiceOperations.startStopwatch();
           Tts.speak("Stopwatch has been started");
+          return;
         }
         else if (response.data.intent === "Stop stopwatch") {
           const stopwatchReading = voiceOperations.stopStopwatch();
           Tts.speak(`Stopwatch has been stopped at ${stopwatchReading}`);
+          return;
         }
         else if (response.data.intent === "Start recording") {
           Tts.speak('Recording started');
