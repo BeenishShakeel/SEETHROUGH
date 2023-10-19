@@ -13,10 +13,6 @@ import{
     Button
     } from 'react-native';
 import Tts from 'react-native-tts';
-// import axios from 'axios';
-// import auth from '@react-native-firebase/auth';
-// import database from '@react-native-firebase/database';
-
 
 const Video = ({navigation, route}) => {
   const [isAudioEnabled, setIsAudioEnabled] = useState(true);

@@ -36,10 +36,9 @@ function onMessageReceived(message, navigation) {
       channelId: 'volunteerhelp',
     },
   });
-  setTimeout(() => {
-    navigation.navigate("Video", {token: message.data.roomID});
-  }, 10000);
+  navigation.navigate("Video", {token: message.data.roomID});
   // Alert.prompt("Incoming call", "Do you want to accept?", () => {
+
   // });
 }
 
