@@ -19,157 +19,77 @@ import Recorder from "./services/RecorderService";
 
 const voiceOperations = new VoiceOperations();
 
-function detectIntentText(navigation, query, lat, long, contacts, startRecording) {
-  axios.post("http://192.168.18.11:8000/get-response", { query: query, location: { latitude: lat, longitude: long } })
-    .then(async (response) => {
-      console.log("Response: ", response.data);
-      if (response.data.intent === "search volunteer with good rating") {
-        VolunteerSearchWithRating()
-          .then(user => {
-            setupVideoCall(navigation, user);
-          })
-          .catch(err => console.error(err));
-      }
-      else if (response.data.intent === "search volunteer from contacts") {
-        VolunteerSearchFromContacts()
-          .then(user => {
-            setupVideoCall(navigation, user);
-          })
-          .catch(err => console.error(err));
-      }
-      else if (response.data.intent === "search volunteer with nearest location") {
-        VolunteerSearchNearestLocation()
-          .then(user => {
-            setupVideoCall(navigation, user);
-          })
-          .catch(err => console.error(err));
-      }
-      else if (response.data.intent === "Make a Call") {
-        let name = response.data.data.queryResult.parameters.fields.person.structValue.fields.name.stringValue;
-        let distances = contacts.map(contact => {
-          let c = contact?.givenName;
-          return distance(name, c);
-        });
-
-        let min = Math.min(...distances);
-        let contact = contacts[distances.indexOf(min)];
-        if (contact) {
-          RNImmediatePhoneCall.immediatePhoneCall(contact.phoneNumbers[0].number);
-        }
-      }
-      else if (response.data.intent === "Message a contact") {
-        let DirectSms = NativeModules.DirectSms;
-        let name = response.data.data.queryResult.parameters.fields.person.structValue.fields.name.stringValue;
-        let distances = contacts.map(contact => {
-          let c = contact?.givenName;
-          return distance(name, c);
-        });
-        let min = Math.min(...distances);
-        let contact = contacts[distances.indexOf(min)];
-        if (contact) {
-          DirectSms.sendDirectSms(contact.phoneNumbers[0].number, "Hello Beeni! Aap kaachi ho?");
-        }
-
-      }
-      else if (response.data.intent === "Start Timer") {
-        const durationObj = response.data.data.queryResult.parameters.fields.duration.structValue.fields;
-        const duration = durationObj.amount.numberValue;
-        const unit = durationObj.unit.stringValue;
-        voiceOperations.startTimer(duration, unit);
-        Tts.speak("Timer has been set. Your phone will ring as soon as the timer ends");
-      }
-      else if (response.data.intent === "Set Alarm") {
-        let alarmSetup;
-        const targetDate = response.data.data.queryResult.parameters.fields.alarmdatetime.structValue.fields;
-        if (targetDate.future) {
-          const futureDate = targetDate.future.structValue.fields;
-          const month = futureDate.month.numberValue;
-          const day = futureDate.day.numberValue;
-          const hours = futureDate.hours.numberValue;
-          const minutes = futureDate.minutes.numberValue;
-          alarmSetup = voiceOperations.setAlarm(month, day, hours, minutes);
-        }
-        else {
-          const hours = targetDate.hours.numberValue;
-          const minutes = targetDate.minutes.numberValue;
-          alarmSetup = voiceOperations.setAlarm(null, null, hours, minutes);
-        }
-        if (alarmSetup)
-          Tts.speak("Alarm has been set");
-        else
-          Tts.speak("Alarm could not be setup. Please give a correct time");
-      }
-      else if (response.data.intent === "Start stopwatch") {
-        voiceOperations.startStopwatch();
-        Tts.speak("Stopwatch has been started");
-      }
-      else if (response.data.intent === "Stop stopwatch") {
-        const stopwatchReading = voiceOperations.stopStopwatch();
-        Tts.speak(`Stopwatch has been stopped at ${stopwatchReading}`);
-      }
-      else if (response.data.intent === "Start recording") {
-        Tts.speak('Recording started');
-        startRecording();
-        Recorder.onStartRecord();
-      }
-      else if (response.data.intent === "Play audio") {
-        startRecording();
-        Recorder.onStartPlay();
-      }
-
-      if (response.data && response.data.responses.length > 0) {
-        Tts.speak(response.data.responses[0].text.text[0]);
-      }
-
-    })
-    .catch(err => console.error(err));
-}
-
 export default function Open({ navigation }) {
   const [lat, setLat] = useState(33.6500104);
   const [long, setLong] = useState(73.1556531);
   const [lang, setlang] = useState("");
   const [contacts, setContacts] = useState([]);
   const [isRecording, setIsRecording] = useState(false);
+  const [isMessage, setIsMessage] = useState(false);
+  const [recipient, setRecipient] = useState(null);
 
   const isFocused = useIsFocused();
-  
+
   useEffect(() => {
     if (isFocused) {
       getUserId()
     }
-
-    Voice.onSpeechStart = onSpeechStartHandler;
-    Voice.onSpeechEnd = onSpeechEndHandler;
-    Voice.onSpeechResults = onSpeechResultsHandler;
 
     var hasLocationPermission = requestLocationPermission();
     if (hasLocationPermission) {
       getLocation();
     }
 
-    Contacts.getAll().then(contacts => {
-      setContacts(contacts);
+    Contacts.getAll().then(fetchedContacts => {
+      console.log("All contacts: ", fetchedContacts.length);
+      setContacts(fetchedContacts);
     });
 
     return () => {
       Voice.destroy().then(Voice.removeAllListeners);
     }
-  }, [isFocused])
+  }, []);
+
+  useEffect(() => {
+    if (contacts.length !== 0) {
+      console.log("Contacts length now is: ", contacts.length);
+      Voice.onSpeechStart = onSpeechStartHandler;
+      Voice.onSpeechEnd = onSpeechEndHandler;
+      Voice.onSpeechResults = onSpeechResultsHandler;
+    }
+  }, [contacts]);
+
+  useEffect(() => {
+    Voice.onSpeechResults = onSpeechResultsHandler;
+  }, [isMessage, recipient]);
 
 
   const onSpeechStartHandler = (e) => {
-    
+
   }
 
   const onSpeechEndHandler = (e) => {
-    
+
   }
 
 
   const onSpeechResultsHandler = (e) => {
     if (e.value.length > 0) {
-      detectIntentText(navigation, e.value[0], lat, long, contacts, () => setIsRecording(true));
+      if (isMessage) {
+        const messageContent = e.value[0];
+        let DirectSms = NativeModules.DirectSms;
+        DirectSms.sendDirectSms(recipient.phoneNumbers[0].number, messageContent);
+        setIsMessage(false);
+        setRecipient(null);
+      }
+      else
+        detectIntentText(navigation, e.value[0], lat, long, contacts, () => setIsRecording(true),
+          (contact) => {
+            console.log("Setting isMessage to true");
+            setIsMessage(true);
+            setRecipient(contact);
+          }
+        );
     }
   }
 
@@ -287,7 +207,7 @@ export default function Open({ navigation }) {
   return (
     <View style={{ flex: 1 }}>
       <Pressable onPress={() => {
-        if(isRecording) {
+        if (isRecording) {
           Recorder.onStopRecord();
           Recorder.onStopPlay();
           setIsRecording(false);
@@ -300,6 +220,119 @@ export default function Open({ navigation }) {
       </Pressable>
     </View>
   );
+}
+
+function detectIntentText(navigation, query, lat, long, contacts, startRecording, startMessage) {
+  axios.post("http://192.168.18.55:8000/get-response", { query: query, location: { latitude: lat, longitude: long } })
+    .then(async (response) => {
+      console.log("Response: ", response.data);
+      if (response.data.intent === "search volunteer with good rating") {
+        VolunteerSearchWithRating()
+          .then(user => {
+            setupVideoCall(navigation, user);
+          })
+          .catch(err => console.error(err));
+      }
+      else if (response.data.intent === "search volunteer from contacts") {
+        VolunteerSearchFromContacts()
+          .then(user => {
+            setupVideoCall(navigation, user);
+          })
+          .catch(err => console.error(err));
+      }
+      else if (response.data.intent === "search volunteer with nearest location") {
+        VolunteerSearchNearestLocation()
+          .then(user => {
+            setupVideoCall(navigation, user);
+          })
+          .catch(err => console.error(err));
+      }
+      else if (response.data.intent === "Make a Call") {
+        let name = response.data.data.queryResult.parameters.fields.person.structValue.fields.name.stringValue;
+        let distances = contacts.map(contact => {
+          let c = contact?.givenName;
+          return distance(name, c);
+        });
+
+        let min = Math.min(...distances);
+        let contact = contacts[distances.indexOf(min)];
+        console.log(contact);
+        if (contact) {
+          RNImmediatePhoneCall.immediatePhoneCall(contact.phoneNumbers[0].number);
+        }
+      }
+      else if (response.data.intent === "Message a contact") {
+        let name = response.data.data.queryResult.parameters.fields.person.structValue.fields.name.stringValue;
+        console.log(name);
+        console.log("ALL CONTACTS LENGTH: ", contacts.length, contacts);
+        let distances = contacts.map(contact => {
+          let c = contact?.givenName;
+          console.log(c);
+          return distance(name, c.toLowerCase());
+        });
+        let min = Math.min(...distances);
+        let contact = contacts[distances.indexOf(min)];
+        console.log(contact, min);
+        if (contact) {
+          Tts.speak('kindly speak your message after tapping on the screen');
+          startMessage(contact);
+        }
+        else {
+          // not found
+        }
+      }
+      else if (response.data.intent === "Start Timer") {
+        const durationObj = response.data.data.queryResult.parameters.fields.duration.structValue.fields;
+        const duration = durationObj.amount.numberValue;
+        const unit = durationObj.unit.stringValue;
+        voiceOperations.startTimer(duration, unit);
+        Tts.speak("Timer has been set. Your phone will ring as soon as the timer ends");
+      }
+      else if (response.data.intent === "Set Alarm") {
+        let alarmSetup;
+        const targetDate = response.data.data.queryResult.parameters.fields.alarmdatetime.structValue.fields;
+        if (targetDate.future) {
+          const futureDate = targetDate.future.structValue.fields;
+          const month = futureDate.month.numberValue;
+          const day = futureDate.day.numberValue;
+          const hours = futureDate.hours.numberValue;
+          const minutes = futureDate.minutes.numberValue;
+          alarmSetup = voiceOperations.setAlarm(month, day, hours, minutes);
+        }
+        else {
+          const hours = targetDate.hours.numberValue;
+          const minutes = targetDate.minutes.numberValue;
+          alarmSetup = voiceOperations.setAlarm(null, null, hours, minutes);
+        }
+        if (alarmSetup)
+          Tts.speak("Alarm has been set");
+        else
+          Tts.speak("Alarm could not be setup. Please give a correct time");
+      }
+      else if (response.data.intent === "Start stopwatch") {
+        voiceOperations.startStopwatch();
+        Tts.speak("Stopwatch has been started");
+      }
+      else if (response.data.intent === "Stop stopwatch") {
+        const stopwatchReading = voiceOperations.stopStopwatch();
+        Tts.speak(`Stopwatch has been stopped at ${stopwatchReading}`);
+      }
+      else if (response.data.intent === "Start recording") {
+        Tts.speak('Recording started');
+        startRecording();
+        Recorder.onStartRecord();
+      }
+      else if (response.data.intent === "Play audio") {
+        startRecording();
+        Recorder.onStartPlay();
+      }
+
+      if (response.data && response.data.responses.length > 0) {
+        Tts.speak(response.data.responses[0].text.text[0]);
+      }
+
+    })
+    .catch(err => console.error(err));
 }
 
 const styles = StyleSheet.create({
