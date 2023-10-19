@@ -1,9 +1,11 @@
 import firestore from '@react-native-firebase/firestore';
 import { getDistance, getPreciseDistance } from 'geolib';
+import AsyncStorage from '@react-native-async-storage/async-storage';
 
-export const VolunteerSearchWithRating = async () => {
-  return new Promise((resolve, reject) => {
-    firestore().collection('users')
+
+export const VolunteerSearchWithRating = () => {
+  return new Promise(async (resolve, reject) => {
+    await firestore().collection('users')
       .where('isActive', '==', true)
       .where('isEngaged', '==', false)
       .where('rating', '>=', 4.5)
@@ -22,10 +24,11 @@ export const VolunteerSearchWithRating = async () => {
   }
 
 
-export const VolunteerSearchFromContacts = () => {
-  return new Promise((resolve, reject) => {
-    firestore().collection('blind')
-      .doc('bicq9-qara8')
+export const VolunteerSearchFromContacts =  () => {
+  return new Promise(async (resolve, reject) => {
+    const userID = await AsyncStorage.getItem('userId');
+    await firestore().collection('blind')
+      .doc(userID)
       .get()
       .then(blind => {
         const contactsArray = blind.data().contacts;
@@ -51,9 +54,9 @@ export const VolunteerSearchFromContacts = () => {
   });
 }
 
-export const VolunteerSearchNearestLocation = async () => {
+export const VolunteerSearchNearestLocation = () => {
 
-  return new Promise((resolve, reject) => {
+  return new Promise(async (resolve, reject) => {
     let b_latitude = 0;
     let b_longitude = 0;
     let v_latitude = 0;
@@ -63,8 +66,9 @@ export const VolunteerSearchNearestLocation = async () => {
     let nearestVolunteerDeviceID = null;
     let minDistance = Number.MAX_VALUE;
 
+    const userID = await AsyncStorage.getItem('userId');
     firestore().collection('blind')
-      .doc('bicq9-qara8')
+      .doc(userID)
       .get()
       .then(blind => {
         b_latitude = blind.data().location.latitude;
@@ -72,7 +76,7 @@ export const VolunteerSearchNearestLocation = async () => {
       })
       .catch(err => reject(err));
 
-    firestore().collection('users')
+    await firestore().collection('users')
       .where('isActive', '==', true)
       .where('isEngaged', '==', false)
       .get()
