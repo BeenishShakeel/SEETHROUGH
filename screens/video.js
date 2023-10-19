@@ -77,13 +77,14 @@ const Video = ({navigation, route}) => {
 
     //setStatus('disconnected');
     Tts.speak('Room disconnected');
-    firestore().collection('users').doc(route.params.userID).update({isEngaged: false});
-    Voice.onSpeechResults = onSpeechResultsHandler;
-    Tts.speak("Do you want to add this volunteer in your contact list. Answer with yes or no.");
-    setTimeout(() => Voice.start(), 12000);
-    const userID = await AsyncStorage.getItem('userId');
+    navigation.navigate('rev');
+    //firestore().collection('users').doc(route.params.userID).update({isEngaged: false});
+    //Voice.onSpeechResults = onSpeechResultsHandler;
+    //Tts.speak("Do you want to add this volunteer in your contact list. Answer with yes or no.");
+    //setTimeout(() => Voice.start(), 12000);
+    //const userID = await AsyncStorage.getItem('userId');
     // Tts.speak('contact added successfully');
-    navigation.goBack();
+    //navigation.goBack();
   };
 
   const _onRoomDidFailToConnect = error => {

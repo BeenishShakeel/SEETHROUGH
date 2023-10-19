@@ -54,7 +54,7 @@ export default function Rev({navigation}){
       const options = {
         method: 'GET',
         url: 'https://nlp-translation.p.rapidapi.com/v1/translate',
-        params: { text: "Your rating is important for Volunteer Kindly rate the volunteer between 1 to 5", to: 'ur', from: 'en' },
+        params: { text: "Our Volunteers are working for you with their heart your opinion is important . Speak your opinion about them after beep sound", to: 'ur', from: 'en' },
         headers: {
           'X-RapidAPI-Key': 'bac0b4a01dmsh637f968c8035314p1dc8b0jsn281bde6eebf7',
           'X-RapidAPI-Host': 'nlp-translation.p.rapidapi.com'
@@ -71,7 +71,6 @@ export default function Rev({navigation}){
         });
   
   
-        //console.log(response.data);
       })
       
 
@@ -80,7 +79,7 @@ export default function Rev({navigation}){
         const options = {
           method: 'GET',
           url: 'https://nlp-translation.p.rapidapi.com/v1/translate',
-          params: { text: "Your rating is important for Volunteer Kindly rate the volunteer between 1 to 5", to: 'fr', from: 'en' },
+          params: { text: "our Volunteers are working for you with their heart your opinion is important . Speak your opinion about Volunteer after beep sound", to: 'fr', from: 'en' },
           headers: {
             'X-RapidAPI-Key': 'bac0b4a01dmsh637f968c8035314p1dc8b0jsn281bde6eebf7',
             'X-RapidAPI-Host': 'nlp-translation.p.rapidapi.com'
@@ -101,7 +100,7 @@ export default function Rev({navigation}){
        
        }
        const english = (audioURL) => {
-        Tts.speak("Your rating is important for Volunteer Kindly rate the volunteer between 1 to 5");
+        Tts.speak("Our Volunteers are working for you with their heart your opinion is important . Speak your opinion about them after beep sound");
        Tts.setDefaultRate(0.4)
        Tts.addEventListener('tts-finish', () => {
         start();
@@ -148,20 +147,14 @@ const onSpeechEndHandler = (e) => {
 console.log("stop handler", e)
 
 }
-const wordToNumber = {
-  one: 1,
-  two: 2,
-  three: 3,
-  four: 4,
-  five: 5,
-};
+
 const onSpeechResultsHandler2 = async(e) => {
  
     const text = e.value.toString()
     const text1 = text.split(',')[0].trim();
     console.log(text1)
-    const userString =  await AsyncStorage.getItem('volunteerid');
-              const userRef = firestore().collection('users').doc(userString);
+    const userString =  await AsyncStorage.getItem('userId');
+              const userRef = firestore().collection('blind').doc(userString);
                userRef.update({
                 rating: text1,
               });
