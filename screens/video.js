@@ -13,6 +13,7 @@ import{
     Button
     } from 'react-native';
 import Tts from 'react-native-tts';
+import Rev from '../src/rev';
 // import axios from 'axios';
 // import auth from '@react-native-firebase/auth';
 // import database from '@react-native-firebase/database';

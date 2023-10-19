@@ -19,13 +19,14 @@ import Recorder from "./services/RecorderService";
 
 const voiceOperations = new VoiceOperations();
 
-function detectIntentText(navigation, query, lat, long, contacts, startRecording) {
-  axios.post("http://192.168.18.11:8000/get-response", { query: query, location: { latitude: lat, longitude: long } })
+async function detectIntentText(navigation, query, lat, long, contacts, startRecording) {
+  axios.post("http://192.168.18.16:8000/get-response", { query: query, location: { latitude: lat, longitude: long } })
     .then(async (response) => {
       console.log("Response: ", response.data);
       if (response.data.intent === "search volunteer with good rating") {
         VolunteerSearchWithRating()
           .then(user => {
+           
             setupVideoCall(navigation, user);
           })
           .catch(err => console.error(err));
@@ -234,17 +235,25 @@ export default function Open({ navigation }) {
 
   }
   const urdu = async () => {
-    const sound2 = new Sound(require('./mediaa14.mp3'),
-      (error, sound) => {
-        if (error) {
-          alert('error' + error.message);
-          return;
-        }
-        sound2.play(() => {
-          sound2.setSpeed(0.4);
-          sound2.release();
-        });
-      });
+    const options = {
+      method: 'GET',
+      url: 'https://nlp-translation.p.rapidapi.com/v1/translate',
+      params: { text: "welcome , How can I assist you", to: 'ur', from: 'en' },
+      headers: {
+        'X-RapidAPI-Key': 'bac0b4a01dmsh637f968c8035314p1dc8b0jsn281bde6eebf7',
+        'X-RapidAPI-Host': 'nlp-translation.p.rapidapi.com'
+      }
+    };
+    axios.request(options).then(function (response) {
+      const result = response.data;
+      const text = result.translated_text[result.to];
+      setlang(text);
+      Tts.setDefaultRate(0.4);
+      Tts.speak(text);
+      console.log(lang);
+
+      //console.log(response.data);
+    })
 
   }
   const french = async () => {
