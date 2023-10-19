@@ -38,6 +38,7 @@ export default function Aboutus({ navigation }) {
         const userString = await AsyncStorage.getItem('userId');
         if (userString !== null) {
           console.log('Volunteer ID:', userString);
+          AsyncStorage.setItem('volunteerid', userString)
           await messaging().registerDeviceForRemoteMessages();
           const fcmToken = await messaging().getToken();
           if (fcmToken) {
@@ -70,9 +71,9 @@ export default function Aboutus({ navigation }) {
       <Image
         source={images[currentImageIndex]}
         style={styles.image}></Image>
-      <Text style={{ marginTop: 20, fontSize: 25, marginLeft: 60, fontFamily: "Poppins-BoldItalic", color: 'black' }}>Whats Our Moto??</Text>
+      <Text style={{ marginTop: 20, fontSize: 25, marginLeft: 60, fontFamily: "Poppins-Bold", color: '#1F4A83' }}>Whats Our Moto??</Text>
       <View style={{ marginTop: 10, marginLeft: 10, marginRight: 45, alignItems: 'center' }}>
-        <Text style={{ fontSize: 19, marginTop: 13, marginLeft: 10, textAlign: 'justify', fontFamily: "Poppins-Italic", color: 'black' }}>See Through My Eyes is a free app for receiving video
+        <Text style={{ fontSize: 18, marginTop: 13, marginLeft: 10, textAlign: 'justify', fontFamily: "Poppins-Italic", color: 'black' }}>See Through My Eyes is a free app for receiving video
           support  Every day, sighted
           volunteers and professionals
           their eyes to
@@ -80,16 +81,17 @@ export default function Aboutus({ navigation }) {
           blind and low-vision
           people lead independent life
         </Text>
+       
       </View>
-      <View style={{ marginBottom: 10, marginLeft: 10, flexDirection: 'row' }}>
+      <View style={{ marginLeft: 10, flexDirection: 'row' }}>
         <View style={{ flexDirection: 'column' }}>
-          <View style={{ backgroundColor: "#1F4A83", marginLeft: 30, marginTop: 80, borderRadius: 50, width: 50, height: 50 }}>
+          <View style={{ backgroundColor: "#1F4A83", marginLeft: 30, marginTop: 100, borderRadius: 50, width: 50, height: 50 }}>
             <MaterialIcons style={{ marginTop: 8, marginLeft: 10 }} name="call" size={30} color={'white'}></MaterialIcons>
           </View>
           <Text style={{ fontSize: 13, marginTop: 10, marginLeft: 26, fontFamily: "Poppins-SemiBold", color: 'black' }}>Free calls</Text>
         </View>
         <View style={{ flexDirection: 'column' }}>
-          <View style={{ backgroundColor: '#1F4A83', marginLeft: 65, marginTop: 80, borderRadius: 50, width: 50, height: 50 }}>
+          <View style={{ backgroundColor: '#1F4A83', marginLeft: 65, marginTop: 100, borderRadius: 50, width: 50, height: 50 }}>
             {/* <Icon name="moon-outline" size={40} style={{ marginLeft:10 , marginTop: 5 }} color={'white'} /> */}
             <MaterialCommunityIcons style={{ marginTop: 6, marginLeft: 7 }} name="hours-24" size={35} color={'white'}></MaterialCommunityIcons>
           </View>
@@ -97,7 +99,7 @@ export default function Aboutus({ navigation }) {
         </View>
         <View style={{ flexDirection: 'column' }}>
           {/* #15317E */}
-          <View style={{ backgroundColor: '#1F4A83', marginLeft: 50, marginTop: 80, borderRadius: 50, width: 50, height: 50 }}>
+          <View style={{ backgroundColor: '#1F4A83', marginLeft: 50, marginTop: 100, borderRadius: 50, width: 50, height: 50 }}>
             <MaterialIcons style={{ marginTop: 8, marginLeft: 10 }} name="security" size={30} color={'white'}></MaterialIcons>
           </View>
           <Text style={{ fontSize: 13, marginTop: 10, marginLeft: 40, fontFamily: "Poppins-SemiBold", color: 'black' }}>Fully Secure</Text>

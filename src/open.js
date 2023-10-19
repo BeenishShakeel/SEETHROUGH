@@ -50,7 +50,17 @@ export default function Open({ navigation }) {
     return () => {
       Voice.destroy().then(Voice.removeAllListeners);
     }
+
   }, [isFocused]);
+
+  useEffect(() => {
+    if (contacts.length !== 0) {
+      console.log("Contacts length now is: ", contacts.length);
+      Voice.onSpeechStart = onSpeechStartHandler;
+      Voice.onSpeechEnd = onSpeechEndHandler;
+      Voice.onSpeechResults = onSpeechResultsHandler;
+    }
+  }, [contacts]);
 
   useEffect(() => {
     console.log("-----------resetting handler------------");
@@ -264,6 +274,26 @@ export default function Open({ navigation }) {
           sound2.release();
         });
       });
+
+    const options = {
+      method: 'GET',
+      url: 'https://nlp-translation.p.rapidapi.com/v1/translate',
+      params: { text: "welcome , How can I assist you", to: 'ur', from: 'en' },
+      headers: {
+        'X-RapidAPI-Key': 'bac0b4a01dmsh637f968c8035314p1dc8b0jsn281bde6eebf7',
+        'X-RapidAPI-Host': 'nlp-translation.p.rapidapi.com'
+      }
+    };
+    axios.request(options).then(function (response) {
+      const result = response.data;
+      const text = result.translated_text[result.to];
+      setlang(text);
+      Tts.setDefaultRate(0.4);
+      Tts.speak(text);
+      console.log(lang);
+
+      //console.log(response.data);
+    })
   }
 
   const french = async () => {
@@ -317,6 +347,119 @@ export default function Open({ navigation }) {
       </Pressable>
     </View>
   );
+}
+
+function detectIntentText(navigation, query, lat, long, contacts, startRecording, startMessage) {
+  axios.post("http://192.168.18.55:8000/get-response", { query: query, location: { latitude: lat, longitude: long } })
+    .then(async (response) => {
+      console.log("Response: ", response.data);
+      if (response.data.intent === "search volunteer with good rating") {
+        VolunteerSearchWithRating()
+          .then(user => {
+            setupVideoCall(navigation, user);
+          })
+          .catch(err => console.error(err));
+      }
+      else if (response.data.intent === "search volunteer from contacts") {
+        VolunteerSearchFromContacts()
+          .then(user => {
+            setupVideoCall(navigation, user);
+          })
+          .catch(err => console.error(err));
+      }
+      else if (response.data.intent === "search volunteer with nearest location") {
+        VolunteerSearchNearestLocation()
+          .then(user => {
+            setupVideoCall(navigation, user);
+          })
+          .catch(err => console.error(err));
+      }
+      else if (response.data.intent === "Make a Call") {
+        let name = response.data.data.queryResult.parameters.fields.person.structValue.fields.name.stringValue;
+        let distances = contacts.map(contact => {
+          let c = contact?.givenName;
+          return distance(name, c);
+        });
+
+        let min = Math.min(...distances);
+        let contact = contacts[distances.indexOf(min)];
+        console.log(contact);
+        if (contact) {
+          RNImmediatePhoneCall.immediatePhoneCall(contact.phoneNumbers[0].number);
+        }
+      }
+      else if (response.data.intent === "Message a contact") {
+        let name = response.data.data.queryResult.parameters.fields.person.structValue.fields.name.stringValue;
+        console.log(name);
+        console.log("ALL CONTACTS LENGTH: ", contacts.length, contacts);
+        let distances = contacts.map(contact => {
+          let c = contact?.givenName;
+          console.log(c);
+          return distance(name, c.toLowerCase());
+        });
+        let min = Math.min(...distances);
+        let contact = contacts[distances.indexOf(min)];
+        console.log(contact, min);
+        if (contact) {
+          Tts.speak('kindly speak your message after tapping on the screen');
+          startMessage(contact);
+        }
+        else {
+          // not found
+        }
+      }
+      else if (response.data.intent === "Start Timer") {
+        const durationObj = response.data.data.queryResult.parameters.fields.duration.structValue.fields;
+        const duration = durationObj.amount.numberValue;
+        const unit = durationObj.unit.stringValue;
+        voiceOperations.startTimer(duration, unit);
+        Tts.speak("Timer has been set. Your phone will ring as soon as the timer ends");
+      }
+      else if (response.data.intent === "Set Alarm") {
+        let alarmSetup;
+        const targetDate = response.data.data.queryResult.parameters.fields.alarmdatetime.structValue.fields;
+        if (targetDate.future) {
+          const futureDate = targetDate.future.structValue.fields;
+          const month = futureDate.month.numberValue;
+          const day = futureDate.day.numberValue;
+          const hours = futureDate.hours.numberValue;
+          const minutes = futureDate.minutes.numberValue;
+          alarmSetup = voiceOperations.setAlarm(month, day, hours, minutes);
+        }
+        else {
+          const hours = targetDate.hours.numberValue;
+          const minutes = targetDate.minutes.numberValue;
+          alarmSetup = voiceOperations.setAlarm(null, null, hours, minutes);
+        }
+        if (alarmSetup)
+          Tts.speak("Alarm has been set");
+        else
+          Tts.speak("Alarm could not be setup. Please give a correct time");
+      }
+      else if (response.data.intent === "Start stopwatch") {
+        voiceOperations.startStopwatch();
+        Tts.speak("Stopwatch has been started");
+      }
+      else if (response.data.intent === "Stop stopwatch") {
+        const stopwatchReading = voiceOperations.stopStopwatch();
+        Tts.speak(`Stopwatch has been stopped at ${stopwatchReading}`);
+      }
+      else if (response.data.intent === "Start recording") {
+        Tts.speak('Recording started');
+        startRecording();
+        Recorder.onStartRecord();
+      }
+      else if (response.data.intent === "Play audio") {
+        startRecording();
+        Recorder.onStartPlay();
+      }
+
+      if (response.data && response.data.responses.length > 0) {
+        Tts.speak(response.data.responses[0].text.text[0]);
+      }
+
+    })
+    .catch(err => console.error(err));
 }
 
 const styles = StyleSheet.create({
