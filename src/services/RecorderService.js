@@ -1,4 +1,5 @@
 import AudioRecorderPlayer from 'react-native-audio-recorder-player';
+import Tts from 'react-native-tts';
 
 class RecorderService {
   
@@ -10,6 +11,7 @@ class RecorderService {
     try {
       const result = await this.audioRecorderPlayer.startRecorder();
       console.log(result);
+      Tts.speak('recording stopped');
     } catch (error) {
       console.error('Error starting recording:', error);
     }

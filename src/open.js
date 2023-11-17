@@ -74,10 +74,12 @@ export default function Open({ navigation }) {
   }, [isRecordingMessage]);
 
   const detectIntentText = useCallback((query) => {
-    axios.post("http://192.168.18.11:8000/get-response", { query: query, location: { latitude: lat, longitude: long } })
+    console.log("detecting")
+    axios.post("http://192.168.98.136:8000/get-response", { query: query, location: { latitude: lat, longitude: long } })
       .then(async (response) => {
         console.log("Response: ", response.data);
         if (response.data.intent === "search volunteer with good rating") {
+          console.log("i am here to search");
           VolunteerSearchWithRating()
             .then(user => {
               setupVideoCall(navigation, user);
@@ -121,7 +123,7 @@ export default function Open({ navigation }) {
           let contact = contacts[distances.indexOf(min)];
           console.log("Matched contact: ", contact);
           if (contact) {
-            setIsRecordingMessage(true);
+            // setIsRecordingMessage(true);
             DirectSms.sendDirectSms(contact.phoneNumbers[0].number, "Hello! Aap kesay ho?");
           }
         }
@@ -134,6 +136,7 @@ export default function Open({ navigation }) {
         }
         else if (response.data.intent === "Set Alarm") {
           let alarmSetup;
+          console.log("Alarm: ", response.data.data.queryResult.parameters)
           const targetDate = response.data.data.queryResult.parameters.fields.alarmdatetime.structValue.fields;
           if (targetDate.future) {
             const futureDate = targetDate.future.structValue.fields;
@@ -338,6 +341,7 @@ export default function Open({ navigation }) {
       <Pressable onPress={() => {
         if (isRecording) {
           Recorder.onStopRecord();
+          // Tts.speak('Recording has been stopped');
           Recorder.onStopPlay();
           setIsRecording(false);
         }

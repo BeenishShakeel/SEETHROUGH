@@ -50,7 +50,7 @@ const [location, setLocation] = useState({latitude: 33.6224444, longitude: 73.09
               phoneNumber: phoneNumber,
               email: email,
               language: language,
-              rating: 2,
+              rating: 5,
               location: location,
               isActive:true,
               isEngaged:false
