@@ -13,7 +13,7 @@ import{
     Button
     } from 'react-native';
 import Tts from 'react-native-tts';
-import Rev from '../src/rev';
+
 // import axios from 'axios';
 // import auth from '@react-native-firebase/auth';
 // import database from '@react-native-firebase/database';
@@ -56,7 +56,7 @@ const Video = ({navigation, route}) => {
   const _onRoomDidDisconnect = ({ roomName, error }) => {
     console.log('[Disconnect]ERROR: ', error);
 
-    //setStatus('disconnected');
+
     Tts.speak('Room disconnected');
     navigation.navigate('rev');
   };
@@ -64,7 +64,7 @@ const Video = ({navigation, route}) => {
   const _onRoomDidFailToConnect = error => {
     console.log('[FailToConnect]ERROR: ', error);
 
-    //setStatus('disconnected');
+
     Tts.speak('Room disconnected');
     navigation.goBack();
   };

@@ -8,6 +8,7 @@ import auth from '@react-native-firebase/auth';
 import MapView , {Marker}from 'react-native-maps';
 import {apikey} from './googlemapkey';
 import axios from 'axios';
+import firestore from '@react-native-firebase/firestore';
 import Tts from 'react-native-tts';
 import Voice from '@react-native-voice/voice';
 import getAutocompleteResults from './getAutocompleteResults';
@@ -34,7 +35,9 @@ export default function Gps({navigation}){
   const GOOGLE_PLACES_API_KEY = 'AIzaSyB9n_eejCbVynkIbQw1hwVQ87OfZ8Jyioc';
  
   useEffect(() => {
-    play();
+   
+  
+     play();
      // Watch user's location updates
   const locationWatchId = Geolocation.watchPosition(
     position => {
@@ -139,6 +142,7 @@ export default function Gps({navigation}){
     } else {
       // User has reached the destination
       Tts.speak('You have reached your destination.');
+      start1();
     }
   };
   
@@ -178,13 +182,16 @@ export default function Gps({navigation}){
         const relativeDirection = calculateRelativeDirection(userHeading, stepBearing);
         console.log(relativeDirection)
         console.log(stepInstructions)
-        Tts.speak(`${relativeDirection} ${modifiedStepInstruction} for ${nextStep.duration.text}`);
+       // Tts.speak(`${relativeDirection} ${modifiedStepInstruction} for ${nextStep.duration.text}`);
 
   // Increment currentStepIndex to move to the next step
       setCurrentStepIndex(currentStepIndex + 1);
 } else {
   // User has reached the destination
   Tts.speak('You have reached your destination.');
+  Tts.setDefaultRate(0.4)
+  Tts.speak('Your suggestions are our motivations Kindly review the App or say skip to cancel the Review ')
+  start1();
 }
       
         }
@@ -264,6 +271,76 @@ const onSpeechResultsHandler2 = async(e) => {
 const text = e.value.toString()
 const text1 = text.split(',')[0].trim();
 setdestination(text1)
+
+
+}
+const start1 = async() =>
+{
+  Tts.speak("speak review")
+ Voice.onSpeechStart = onSpeechStartHandler1;
+ Voice.onSpeechEnd = onSpeechEndHandler1;
+ Voice.onSpeechResults = onSpeechResultsHandler1;
+ startRecording1();
+ return () => {
+   Voice.destroy().then(Voice.removeAllListeners);
+ }
+
+}
+
+
+const startRecording1 = async () => {
+try {
+console.log("start")
+await Voice.start('en-Us')
+} catch (error) {
+console.log("error raised", error)
+}
+stopRecording();
+console.log("stop")
+}
+const stopRecording1 = async () => {
+try {
+await Voice.stop()
+// Voice.onSpeechResults = onSpeechResultsHandler2;
+} catch (error) {
+console.log("error raised", error)
+}
+}
+const onSpeechStartHandler1 = (e) => {
+console.log("starttterrr handler==>>>", e)
+}
+const onSpeechEndHandler1 = (e) => {
+// setLoading(false)
+console.log("stop handler", e)
+// Voice.onSpeechResults = onSpeechResultsHandler2;
+}
+const onSpeechResultsHandler1 = async(e) => {
+const text = e.value.toString()
+const text1 = text.split(',')[0].trim();
+if (text1.includes("skip"))
+{
+   navigation.navigate("open");
+}
+else
+{
+  const random1 = Math.random().toString(36).substring(2, 7);
+  const random2 = Math.random().toString(36).substring(2, 7);
+  const userId = `${random1}-${random2}`;
+const userRef = firestore().collection('appreview').doc(userId);
+userRef
+  .set({
+    rating:text1
+ 
+  })
+  .then(() => {
+    ToastAndroid.show("Rating Saved Successfully", ToastAndroid.SHORT);
+  
+  })
+  .catch((error) => {
+    ToastAndroid.show(error.message, ToastAndroid.SHORT);
+    console.log("Error: ", error.message);
+  });
+}
 
 }
 const searchDestination = (query) => {
