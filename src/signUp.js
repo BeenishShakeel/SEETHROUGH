@@ -13,6 +13,8 @@ import AsyncStorage from "@react-native-async-storage/async-storage";
 export default function SignUp({ navigation }) {
   const [selectedLanguages, setSelectedLanguages] = React.useState([]);
   const [location, setLocation] = useState(null);
+  const [language, setLanguage] = React.useState();
+// const [location, setLocation] = useState({latitude: 33.6224444, longitude: 73.0960449});
   const data = [
     { key: '1', value: 'Urdu' },
     { key: '2', value: 'English' },
@@ -41,8 +43,15 @@ export default function SignUp({ navigation }) {
     return () => {
       Geolocation.clearWatch(locationWatchId);
     };
-  }, [setCurrentLocation]);
-  
+  }, [setCurrentLocation])
+
+  const [email, setEmail] = useState('');
+  const [password, setPassword] = useState('');
+  const [confirmPassword, setConfirmPassword] = useState('');
+  const [firstName, setFirstName] = useState('');
+  const [lastName, setLastName] = useState('');
+  const [phoneNumber, setPhoneNumber] = useState('');
+
   useEffect(() => {
     
   }, []);

@@ -175,6 +175,7 @@ dependencies {
     implementation project(':react-native-contacts')
     implementation project(':react-native-immediate-phone-call')
     implementation project(':react-native-audio-recorder-player')
+    implementation 'com.google.android.gms:play-services-location:21.0.1'
 
     debugImplementation("com.facebook.flipper:flipper:${FLIPPER_VERSION}")
     debugImplementation("com.facebook.flipper:flipper-network-plugin:${FLIPPER_VERSION}") {

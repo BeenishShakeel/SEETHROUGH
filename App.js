@@ -7,7 +7,7 @@ import Aboutus from './src/Aboutus';
 import Open from './src/open';
 import Profile from './src/Profile';
 import Review from './src/review';
-import Main1 from './src/main'
+import Main from './src/main'
 import BlindSignup from './src/blindsignup';
 import SignUp from './src/signUp';
 import EditProfile from './src/EditProfile'
@@ -39,10 +39,9 @@ function onMessageReceived(message, navigation) {
       channelId: 'volunteerhelp',
     },
   });
-  setTimeout(() => {
-    navigation.navigate("Video", {token: message.data.roomID});
-  }, 10000);
+  navigation.navigate("Video", {token: message.data.roomID});
   // Alert.prompt("Incoming call", "Do you want to accept?", () => {
+
   // });
 }
 
@@ -92,7 +91,8 @@ export default function App() {
   return (
     <NavigationContainer>
       <Stack.Navigator screenOptions={{ headerShown: false }} initialRouteName='main' >
-      <Stack.Screen name="main" component={Main1} />
+      <Stack.Screen name="main" component={Main} 
+      <Stack.Navigator screenOptions={{ headerShown: false }} initialRouteName='open'>
         <Stack.Screen name="open" component={Open} />
         <Stack.Screen name="voiceOperations" component={VoiceOperations} />
         <Stack.Screen name="gps" component={Gps} />
