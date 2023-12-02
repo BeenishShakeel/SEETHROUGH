@@ -92,6 +92,7 @@ export default function BlindSignup({ navigation }) {
     } catch (error) {
       console.log("error raised", error)
     }
+    
   }
   const onSpeechStartHandler = (e) => {
     console.log("starttterrr handler==>>>", e)

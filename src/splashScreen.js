@@ -23,14 +23,24 @@ export default function Splash({navigation, route} ) {
 	  </View>
 	  <View style = {{backgroundColor:'white' , height:200 , width:370,  borderBottomRightRadius:200}}>
 	  <View style = {{backgroundColor:'#1F4A83' , height:300 , width:370,  borderTopLeftRadius:100}}>
-	  <TouchableOpacity style={{backgroundColor:'#1F4A83', borderRadius: 30, justifyContent: "center", alignItems: "center",alignSelf: "center",marginTop: 80, height: 60, width: 180}} onPress={() => navigation.navigate('Login')}>
+	  <TouchableOpacity style=
+	  	{{backgroundColor:'#1F4A83', 
+		  borderRadius: 30, 
+		  justifyContent: "center", 
+		  alignItems: "center",
+		  alignSelf: "center",
+		  marginTop: 80, 
+		  height: 60, 
+		  width: 180
+		  }} onPress={() => navigation.navigate('Login')}>
       <Text style={{ width:200 , marginLeft:140, color: "white", fontSize: 23,  fontFamily: "Poppins-SemiBold", alignSelf: "center"}}>Login</Text>
       <View style ={{ borderBottomWidth: 0.5, 
 		borderColor:'#D5D8DC', width:70 ,  marginLeft:10,
 	   }}>
 	   </View>
 	  </TouchableOpacity>
-	  <TouchableOpacity style={{backgroundColor:'#1F4A83', borderRadius: 30, justifyContent: "center", alignItems: "center",alignSelf: "center",marginTop: 10, height: 60, width: 180}} onPress={() => navigation.navigate('SignUp')}>
+	  <TouchableOpacity style={{backgroundColor:'#1F4A83', borderRadius: 30, justifyContent: "center", alignItems: "center",alignSelf: "center",marginTop: 10, height: 60, width: 180}} 
+	  onPress={() => navigation.navigate('SignUp')}>
       <Text style={{ width:200 , marginLeft:100, color: "white", fontSize: 23,  fontFamily: "Poppins-SemiBold", alignSelf: "center"}}>Register</Text>
 	  <View style ={{ borderBottomWidth: 0.5, 
 		borderColor:'#D5D8DC', width:110 , 
@@ -42,32 +52,8 @@ export default function Splash({navigation, route} ) {
 	  
 	 
 	  </View>
-	  </View>
-	 
-	
-	
-       
-		
-			
-
-		
-				
-				
-			
-			
-			
-			
-				
-				
-		
-				
-	   
+	  </View>				
 			</View>
-		
-		
-     
-
-	
 	
 	);
 };

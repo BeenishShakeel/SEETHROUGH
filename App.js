@@ -26,7 +26,11 @@ import VoiceOperations from "./src/Clock";
 import messaging from "@react-native-firebase/messaging";
 import notifee from '@notifee/react-native';
 import Rev from './src/rev';
+import imageScreen from './screens/imageScreen';
 import { Alert } from 'react-native';
+import BlindVideo from './screens/blindCall';
+import FriendList from './screens/FriendList';
+import Main from './screens/Main';
 
 function onMessageReceived(message, navigation) {
   console.log("Notification data: ", message.data);
@@ -104,6 +108,10 @@ export default function App() {
         <Stack.Screen name='ContactList' component={ContactsList}></Stack.Screen>
         <Stack.Screen name='Contact' component={Contact}></Stack.Screen>
         <Stack.Screen name='rev' component={Rev}></Stack.Screen>
+        <Stack.Screen name='imageScreen' component={imageScreen}></Stack.Screen>
+        <Stack.Screen name='BlindVideo' component={BlindVideo}></Stack.Screen>
+        <Stack.Screen name='FriendList' component={FriendList}></Stack.Screen>
+        <Stack.Screen name='Main' component={Main}></Stack.Screen>
       </Stack.Navigator>
     </NavigationContainer>
 
