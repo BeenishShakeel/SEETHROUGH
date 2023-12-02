@@ -37,4 +37,4 @@ async function callFunctions() {
 	await BackgroundService.start(veryIntensiveTask, options);
 }
 
-callFunctions();
+// callFunctions();

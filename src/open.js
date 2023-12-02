@@ -1,21 +1,22 @@
-import React, { useState, useEffect, useCallback } from "react";
-import { View, StyleSheet, Image, Pressable, NativeModules } from "react-native";
+import React, { useState, useEffect, useCallback, useRef } from "react";
+import { View, StyleSheet, Image, Pressable, NativeModules, TouchableOpacity, Text, ImageBackground } from "react-native";
 import { useIsFocused } from "@react-navigation/native";
 import Sound from 'react-native-sound';
 import Voice from '@react-native-voice/voice';
 import axios from "axios";
 import Tts from 'react-native-tts';
 import { PermissionsAndroid } from 'react-native';
-import Geolocation from 'react-native-geolocation-service';
 import AsyncStorage from '@react-native-async-storage/async-storage';
 import Contacts from 'react-native-contacts';
 import RNImmediatePhoneCall from 'react-native-immediate-phone-call';
 import VoiceOperations from "./services/PicoVoice";
-import { distance } from 'fastest-levenshtein';
 import firestore from '@react-native-firebase/firestore';
 import { VolunteerSearchWithRating, VolunteerSearchFromContacts, VolunteerSearchNearestLocation } from "./volunteerSearchService";
 import { setupVideoCall } from "./videoService";
 import Recorder from "./services/RecorderService";
+import Fuse from 'fuse.js';
+
+
 
 const voiceOperations = new VoiceOperations();
 
@@ -25,9 +26,10 @@ export default function Open({ navigation }) {
   const [lang, setlang] = useState("");
   const [contacts, setContacts] = useState([]);
   const [isRecording, setIsRecording] = useState(false);
-  const [isRecordingMessage, setIsRecordingMessage] = useState(false);
 
   const isFocused = useIsFocused();
+
+  let phoneNumber = "";
 
   useEffect(() => {
     if (isFocused) {
@@ -43,7 +45,7 @@ export default function Open({ navigation }) {
     }
 
     Contacts.getAll().then(fetchedContacts => {
-      console.log("Fetched contacts: ", fetchedContacts.length)
+      // console.log("Fetched contacts: ", fetchedContacts.length)
       setContacts(fetchedContacts);
     });
 
@@ -65,19 +67,68 @@ export default function Open({ navigation }) {
   useEffect(() => {
     console.log("-----------resetting handler------------");
     Voice.onSpeechResults = onSpeechResultsHandler;
-  }, [contacts, isRecordingMessage]);
+  }, [contacts]);
 
-  useEffect(() => {
-    if(isRecordingMessage) {
-      Tts.speak("Please tap the screen and speak your message");
+  // useEffect(() => {
+  //   if (isRecordingMessage) {
+  //     // Tts.speak("Please tap the screen and speak your message");
+  //     start1();
+  //     // Voice.onSpeechResults = onSpeechResultsHandler;
+  //   }
+  // }, [isRecordingMessage]);
+  const start2 = async () => {
+    console.log("record audio");
+    Voice.destroy().then(() => {
+      Voice.onSpeechResults = onSpeechResultsHandler;
+      Recording();
+    });
+  }
+
+  const Recording = async () => {
+    try {
+      console.log("start recording ");
+      Tts.speak('Recording started');
+      await Recorder.onStartRecord();
+    } catch (error) {
+      console.log("error raised", error);
     }
-  }, [isRecordingMessage]);
+    console.log("stop Recording");
+  }
+
+  const start = async () => {
+    console.log("start recording name");
+    Voice.destroy().then(() => {
+      Voice.onSpeechResults = onSpeechResultsHandler3;
+      startRecording();
+    });
+  }
+
+  const start1 = async () => {
+    console.log("in start");
+    Voice.destroy().then(() => {
+      Voice.onSpeechResults = onSpeechResultsHandler2;
+      startRecording();
+    });
+  }
+
+
+  const startRecording = async () => {
+    try {
+      console.log("start message");
+      await Voice.start('en-Us');
+    } catch (error) {
+      console.log("error raised", error);
+    }
+    console.log("stop startRecording");
+  }
 
   const detectIntentText = useCallback((query) => {
-    axios.post("http://192.168.18.11:8000/get-response", { query: query, location: { latitude: lat, longitude: long } })
+    console.log("detecting")
+    axios.post("http://192.168.18.55:8000/get-response", { query: query, location: { latitude: lat, longitude: long } })
       .then(async (response) => {
-        console.log("Response: ", response.data);
+        // console.log("Response: ", response.data);
         if (response.data.intent === "search volunteer with good rating") {
+          console.log("i am here to search");
           VolunteerSearchWithRating()
             .then(user => {
               setupVideoCall(navigation, user);
@@ -100,29 +151,36 @@ export default function Open({ navigation }) {
         }
         else if (response.data.intent === "Make a Call") {
           let name = response.data.data.queryResult.parameters.fields.person.structValue.fields.name.stringValue;
-          let distances = contacts.map(contact => {
-            let c = contact?.givenName.toLowerCase();
-            return distance(name, c);
-          });
-          let min = Math.min(...distances);
-          let contact = contacts[distances.indexOf(min)];
+          const options = {
+            keys: ['displayName'], // Replace 'name' with the key you want to search in your contacts
+          };
+          const fuse = new Fuse(contacts, options);
+          const contact = fuse.search(name);
+          // console.log('hmm');
+          console.log(contact[0]);
+
           if (contact) {
-            RNImmediatePhoneCall.immediatePhoneCall(contact.phoneNumbers[0].number);
+            RNImmediatePhoneCall.immediatePhoneCall(contact[0].item.phoneNumbers[0].number);
+          }
+          else {
+            Tts.speak('contact does not exist');
           }
         }
         else if (response.data.intent === "Message a contact") {
-          let DirectSms = NativeModules.DirectSms;
           let name = response.data.data.queryResult.parameters.fields.person.structValue.fields.name.stringValue;
-          let distances = contacts.map(contact => {
-            let c = contact?.givenName.toLowerCase();
-            return distance(name, c);
-          });
-          let min = Math.min(...distances);
-          let contact = contacts[distances.indexOf(min)];
-          console.log("Matched contact: ", contact);
+          const options = {
+            keys: ['displayName'], // Replace 'name' with the key you want to search in your contacts
+          };
+          const fuse = new Fuse(contacts, options);
+          const contact = fuse.search(name);
+          console.log("Matched contact: ", contact[0]);
           if (contact) {
-            setIsRecordingMessage(true);
-            DirectSms.sendDirectSms(contact.phoneNumbers[0].number, "Hello! Aap kesay ho?");
+            setTimeout(start1, 5000);
+            Tts.speak(`kindly record your message for ${contact[0].item.displayName}`);
+            phoneNumber = contact[0].item.phoneNumbers[0].number;
+          }
+          else {
+            Tts.speak('contact does not exist');
           }
         }
         else if (response.data.intent === "Start Timer") {
@@ -134,6 +192,7 @@ export default function Open({ navigation }) {
         }
         else if (response.data.intent === "Set Alarm") {
           let alarmSetup;
+          console.log("Alarm: ", response.data.data.queryResult.parameters)
           const targetDate = response.data.data.queryResult.parameters.fields.alarmdatetime.structValue.fields;
           if (targetDate.future) {
             const futureDate = targetDate.future.structValue.fields;
@@ -164,13 +223,28 @@ export default function Open({ navigation }) {
           return;
         }
         else if (response.data.intent === "Start recording") {
-          Tts.speak('Recording started');
-          setIsRecording(true);
-          Recorder.onStartRecord();
+          setTimeout(start,5000);
+          Tts.speak('what do you want to name this recording');
+          setTimeout(start2, 12000);
         }
         else if (response.data.intent === "Play audio") {
-          setIsRecording(true);
+          // setIsRecording(true);
           Recorder.onStartPlay();
+        }
+        else if(response.data.intent === "instructions"){
+          Tts.speak('Welcome First of all you need to double tap for any function to get perform');
+          Tts.speak('To do a sim call use keyword call contact name like call Ali');
+          Tts.speak('To do a sim message use keyword message contact name. it will then ask you to record your message body');
+          Tts.speak('To search and get in call with a good rated volunteer use keyword search volunteer with good rating');
+          Tts.speak('To search and get in call with a nearest located volunteer use keyword search volunteer near me');
+          Tts.speak('To search and get in call with a volunteer from your app contactlist use keyword search volunteer from contacts');
+          Tts.speak('To add the volunteer in your contact the app will ask you to tap yes or no at the end of the call');
+          Tts.speak('During the videocall with the volunteer double tap on the top left to switch camera on the top right to off camera on the bottom left to get muted and on the bottom right to end the call ');
+          Tts.speak('To set an alarm double tap and say keyword set an alarm for 5pm');
+          Tts.speak('To start stopwatch use keyword start stopwatch and to stop use stop stopwatch');
+          Tts.speak('To start the timer use keyword set a timer for 10 minutes');
+          Tts.speak('To record an audio use keyword start recording and to stop say stop recording');
+          Tts.speak('it will then ask you to tell the name to save recording so that you can play it later on by using keyword play recordingname')
         }
 
         if (response.data && response.data.responses.length > 0) {
@@ -182,24 +256,35 @@ export default function Open({ navigation }) {
   }, [contacts, lat, long]);
 
   const onSpeechStartHandler = (e) => {
-
+    console.log('start handler');
   }
 
   const onSpeechEndHandler = (e) => {
-    setIsRecordingMessage(false);
+    console.log("stop handler");
   }
 
-
+  const onSpeechResultsHandler3 = (e) => {
+    if (e.value.length > 0) {
+      console.log("name of the recording: ", e.value[0]);
+    }
+  }
+  
+ 
+  const onSpeechResultsHandler2 = (e) => {
+    if (e.value.length > 0) {
+      console.log("Message Body: ", e.value[0]);
+      let DirectSms = NativeModules.DirectSms;
+      DirectSms.sendDirectSms(phoneNumber, e.value[0]);
+      phoneNumber = "";
+      Voice.destroy().then(() => {
+        Voice.onSpeechResults = onSpeechResultsHandler;
+      });
+    }
+  }
   const onSpeechResultsHandler = (e) => {
     if (e.value.length > 0) {
-      if(isRecordingMessage) {
-        console.log("Body: ", e.value[0]);
-        setIsRecordingMessage(false);
-      }
-      else {
-        console.log("Before invoking, contacts length: ", contacts.length);
-        detectIntentText(e.value[0]);
-      }
+      console.log("Before invoking, contacts length: ", contacts.length);
+      detectIntentText(e.value[0]);
     }
   }
 
@@ -338,14 +423,17 @@ export default function Open({ navigation }) {
       <Pressable onPress={() => {
         if (isRecording) {
           Recorder.onStopRecord();
+          // Tts.speak('Recording has been stopped');
           Recorder.onStopPlay();
           setIsRecording(false);
         }
         else
           Voice.start();
       }}>
-        <Image source={require("../assets/images/gh.gif")} style={styles.backgroundImage}
-        />
+
+        <ImageBackground source={require("../assets/images/gh.gif")} style={styles.backgroundImage}>
+
+        </ImageBackground>
       </Pressable>
     </View>
   );
@@ -362,7 +450,7 @@ const styles = StyleSheet.create({
     width: 400,
   },
   backgroundImage: {
-    width: "100%",
-    height: "100%"
+    width: '100%',
+    height: '100%',
   }
 });

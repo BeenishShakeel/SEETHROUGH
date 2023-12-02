@@ -5,13 +5,26 @@ import AsyncStorage from '@react-native-async-storage/async-storage';
 
 export const VolunteerSearchWithRating = () => {
   return new Promise(async (resolve, reject) => {
+    const userID = await AsyncStorage.getItem('userId');
+    console.log(userID);
+
+    await firestore().collection('blind')
+      .doc(userID)
+      .get()
+      .then(blind => {
+        //const contactsArray = blind.data().contacts;
+         b_language = blind.data().language;
+      })
     await firestore().collection('users')
       .where('isActive', '==', true)
       .where('isEngaged', '==', false)
-      .where('rating', '>=', 4.5)
+      .where('languages', 'array-contains', b_language)
+      .orderBy('rating')
+      .limit(1)
       .get()
       .then(querySnapshot => {
         querySnapshot.forEach(documentSnapshot =>{
+          console.log("name", documentSnapshot.firstName);
           return resolve({
             userID: documentSnapshot.id,
             deviceID: documentSnapshot.data().deviceID
@@ -32,11 +45,13 @@ export const VolunteerSearchFromContacts =  () => {
       .get()
       .then(blind => {
         const contactsArray = blind.data().contacts;
+        b_language = blind.data().language;
         if (contactsArray.length > 0) {
           firestore().collection("users")
             .where(firestore.FieldPath.documentId(), 'in', contactsArray)
             .where('isActive', '==', true)
             .where('isEngaged', '==', false)
+            .where(b_language, 'in', 'languages')
             .get()
             .then(querySnapshot => {
               querySnapshot.forEach(documentSnapshot => {
@@ -73,12 +88,14 @@ export const VolunteerSearchNearestLocation = () => {
       .then(blind => {
         b_latitude = blind.data().location.latitude;
         b_longitude = blind.data().location.longitude;
+        b_language = blind.data().language;
       })
       .catch(err => reject(err));
 
     await firestore().collection('users')
       .where('isActive', '==', true)
       .where('isEngaged', '==', false)
+      .where(b_language, 'in', 'languages')
       .get()
       .then(querySnapshot => {
         querySnapshot.forEach(documentSnapshot => {
