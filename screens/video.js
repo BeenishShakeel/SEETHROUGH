@@ -19,7 +19,7 @@ import Voice from '@react-native-voice/voice';
 import AsyncStorage from '@react-native-async-storage/async-storage';
 import Rev from '../src/rev';
 import ViewShot from "react-native-view-shot";
-import { Camera } from "react-native-vision-camera";
+import { Camera, useCameraDevice } from "react-native-vision-camera";
 import { PinchGestureHandler, State } from 'react-native-gesture-handler';
 
 
@@ -41,6 +41,8 @@ const Video = ({ navigation, route }) => {
   const twilioRef = useRef(null);
   const viewShotRef = useRef();
   const pinchScale = useRef(1);
+
+  const device = useCameraDevice('front');
 
   const _onConnectButtonPress = () => {
     twilioRef.current.connect({ accessToken: token });
@@ -92,7 +94,7 @@ const Video = ({ navigation, route }) => {
 
     //setStatus('disconnected');
     Tts.speak('Room disconnected');
-    navigation.navigate('rev');
+    navigation.navigate('open');
     //firestore().collection('users').doc(route.params.userID).update({isEngaged: false});
     //Voice.onSpeechResults = onSpeechResultsHandler;
     //Tts.speak("Do you want to add this volunteer in your contact list. Answer with yes or no.");
@@ -232,7 +234,7 @@ const Video = ({ navigation, route }) => {
             <PinchGestureHandler
               onGestureEvent={_onPinchGestureEvent}
               onHandlerStateChange={_onPinchHandlerStateChange}>
-              <Camera style={styles.localVideo} type={Camera.Constants.Type.front} />
+              <Camera style={styles.localVideo} device={device} isActive={true } />
             </PinchGestureHandler>
           </View>
         }

@@ -1,5 +1,6 @@
-import React, { useEffect } from 'react';
-import { NavigationContainer, TabActions } from "@react-navigation/native";
+import React, { useCallback, useEffect } from 'react';
+import { Text, Linking } from 'react-native';
+import { NavigationContainer, useNavigation } from "@react-navigation/native";
 import { createStackNavigator } from '@react-navigation/stack';
 import { createBottomTabNavigator } from '@react-navigation/bottom-tabs';
 import Login from './src/login';
@@ -18,38 +19,62 @@ import MaterialIcons from "react-native-vector-icons/MaterialIcons";
 import { colors } from './assets/constants/colors';
 const Tab = createBottomTabNavigator();
 const Stack = createStackNavigator();
-import SplashScreen from './screens/splashscreen';
 import Video from './screens/video';
 import ContactsList from './src/ContactList';
 import Contact from './src/Contact';
 import VoiceOperations from "./src/Clock";
-import messaging from "@react-native-firebase/messaging";
-import notifee from '@notifee/react-native';
 import Rev from './src/rev';
-import { Alert } from 'react-native';
-
-function onMessageReceived(message, navigation) {
-  console.log("Notification data: ", message.data);
-  notifee.displayNotification({
-    title: "Incoming call",
-    body: "Somebody needs your help",
-    android: {
-      channelId: 'volunteerhelp',
-    },
-  });
-  navigation.navigate("Video", {token: message.data.roomID});
-  // Alert.prompt("Incoming call", "Do you want to accept?", () => {
-
-  // });
-}
+import IncomingCall from "./screens/IncomingCall";
+import messaging from '@react-native-firebase/messaging';
+import { useState } from 'react';
 
 function Root({ navigation }) {
 
+  const [showIncomingCall, setShowIncomingCall] = useState(false);
+  const [caller, setCaller] = useState(null);
+
   useEffect(() => {
-    messaging().onMessage((message) => onMessageReceived(message, navigation));
-    messaging().setBackgroundMessageHandler((message) => onMessageReceived(message, navigation));
+    const unsubscribe = messaging().onMessage(onMessageReceived);
+    return unsubscribe;
+  }, [onMessageReceived]);
+
+  useEffect(() => {
+    Linking.getInitialURL().then(url => {
+      if(url) {
+        const token = url.split("/")[3];
+        setCaller({
+          name: "Ali Taimoor",
+          rating: 4.8,
+          roomID: token
+        });
+        setShowIncomingCall(true);
+      }
+    })
+    .catch(err => console.error(err));
   }, []);
-  
+
+  const onMessageReceived = (message) => {
+    setCaller({
+      name: "Ali Taimoor",
+      rating: 4.8,
+      roomID: message.data.roomID
+    });
+    setShowIncomingCall(true);
+  }
+
+  const declineCall = useCallback(() => {
+    setShowIncomingCall(false);
+    setCaller(null);
+  });
+
+  const acceptCall = useCallback(() => {
+    navigation.navigate("Video", { token: caller.roomID });
+  }, [caller]);
+
+  if (showIncomingCall) {
+    return <IncomingCall callerName={caller.name} rating={caller.rating} onDecline={declineCall} onAccept={acceptCall} />
+  }
+
   return (
     <Tab.Navigator screenOptions={({ route }) => ({
       headerShown: false,
@@ -85,10 +110,22 @@ function Root({ navigation }) {
     </Tab.Navigator>
   );
 }
+
+const linking = {
+  prefixes: ["helpify://"],
+  config: {
+    initialRouteName: "Root",
+    screens: {
+      Root: 'Root/:token'
+    }
+  }
+};
+
 export default function App() {
+  
   return (
-    <NavigationContainer>
-      <Stack.Navigator screenOptions={{ headerShown: false }} initialRouteName='open'>
+    <NavigationContainer linking={linking} fallback={<Text>Loading...</Text>}>
+      <Stack.Navigator screenOptions={{ headerShown: false }} initialRouteName='Root'>
         <Stack.Screen name="open" component={Open} />
         <Stack.Screen name="voiceOperations" component={VoiceOperations} />
         <Stack.Screen name="gps" component={Gps} />
@@ -104,10 +141,9 @@ export default function App() {
         <Stack.Screen name='ContactList' component={ContactsList}></Stack.Screen>
         <Stack.Screen name='Contact' component={Contact}></Stack.Screen>
         <Stack.Screen name='rev' component={Rev}></Stack.Screen>
+        <Stack.Screen name='IncomingCall' component={IncomingCall} />
       </Stack.Navigator>
     </NavigationContainer>
-
-
   );
 }
 

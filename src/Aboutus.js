@@ -12,12 +12,6 @@ import axios from "axios";
 import firestore from '@react-native-firebase/firestore';
 import AsyncStorage from "@react-native-async-storage/async-storage";
 
-//        <ImageBackground
-// source={require('../assets/images/new4.jpg')}
-// resizeMode='cover'
-// style={styles.imageBackground}
-// imageStyle={{ opacity: 0.6 }}>
-
 export default function Aboutus({ navigation }) {
   const images = [
     require('../assets/images/12.jpg'),
@@ -36,6 +30,7 @@ export default function Aboutus({ navigation }) {
     const getFcmToken = async () => {
       try {
         const userString = await AsyncStorage.getItem('userId');
+        console.log(userString)
         if (userString !== null) {
           console.log('Volunteer ID:', userString);
           AsyncStorage.setItem('volunteerid', userString)

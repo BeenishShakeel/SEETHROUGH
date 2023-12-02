@@ -2,12 +2,13 @@
  * @format
  */
 
-import { AppRegistry } from 'react-native';
+import { AppRegistry, Linking } from 'react-native';
 import App from './App';
 import { name as appName } from './app.json';
 import BackgroundService from 'react-native-background-actions';
 import RNShake from 'react-native-shake';
 import invokeApp from 'react-native-invoke-app';
+import messaging from '@react-native-firebase/messaging';
 
 AppRegistry.registerComponent(appName, () => App);
 
@@ -37,4 +38,15 @@ async function callFunctions() {
 	await BackgroundService.start(veryIntensiveTask, options);
 }
 
-callFunctions();
+// callFunctions();
+
+const onMessageReceived = (message) => {
+	Linking.openURL(
+		`helpify://Root/${message.data.roomID}`
+	).catch((err) => {
+		console.error(err); t
+	});
+	return Promise.resolve();
+}
+
+messaging().setBackgroundMessageHandler(onMessageReceived);

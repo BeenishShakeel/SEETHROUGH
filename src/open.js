@@ -75,7 +75,7 @@ export default function Open({ navigation }) {
 
   const detectIntentText = useCallback((query) => {
     console.log("detecting")
-    axios.post("http://192.168.98.136:8000/get-response", { query: query, location: { latitude: lat, longitude: long } })
+    axios.post("http://192.168.18.11:8000/get-response", { query: query, location: { latitude: lat, longitude: long } })
       .then(async (response) => {
         console.log("Response: ", response.data);
         if (response.data.intent === "search volunteer with good rating") {

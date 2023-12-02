@@ -30,7 +30,7 @@ export default function Login({navigation}){
         .then(async (response) => {
           try {
             await AsyncStorage.setItem("uid", response.user.uid);
-    
+            await AsyncStorage.setItem("userId", response.user.uid);
             
             firestore()
               .collection('users')
