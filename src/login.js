@@ -32,7 +32,7 @@ export default function Login({navigation}){
         .then(async (response) => {
           try {
             await AsyncStorage.setItem("uid", response.user.uid);
-    
+            await AsyncStorage.setItem("userId", response.user.uid);
             // Now, query Firestore to check if the user is an admin based on their email.
             firestore()
               .collection('users')

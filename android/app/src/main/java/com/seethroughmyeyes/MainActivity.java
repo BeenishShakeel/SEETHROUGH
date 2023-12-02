@@ -8,6 +8,9 @@ import com.facebook.react.defaults.DefaultReactActivityDelegate;
 import android.os.Bundle;
 import com.codegulp.invokeapp.RNInvokeApp;
 
+// Import the NotifeeApiModule
+import io.invertase.notifee.NotifeeApiModule;
+
 public class MainActivity extends ReactActivity {
 
   /**
@@ -17,6 +20,7 @@ public class MainActivity extends ReactActivity {
   @Override
   protected String getMainComponentName() {
     return "seeThroughMyEyes";
+    // return NotifeeApiModule.getMainComponent("app");
   }
 
   /**
