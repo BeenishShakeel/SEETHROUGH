@@ -1,7 +1,7 @@
 import React, { useState, useEffect } from "react";
 import { Text, View, StyleSheet, TouchableOpacity, ToastAndroid } from "react-native";
 import TextField2 from "./textField2";
-import { SelectList } from 'react-native-dropdown-select-list';
+import { MultipleSelectList } from 'react-native-dropdown-select-list';
 import Icon from "react-native-vector-icons/Ionicons";
 import { colors } from "../assets/constants/colors";
 import MaterialIcons from "react-native-vector-icons/MaterialIcons";
@@ -11,13 +11,40 @@ import Geolocation from 'react-native-geolocation-service';
 import AsyncStorage from "@react-native-async-storage/async-storage";
 
 export default function SignUp({ navigation }) {
+  const [selectedLanguages, setSelectedLanguages] = React.useState([]);
+  const [location, setLocation] = useState(null);
   const [language, setLanguage] = React.useState();
-const [location, setLocation] = useState({latitude: 33.6224444, longitude: 73.0960449});
+// const [location, setLocation] = useState({latitude: 33.6224444, longitude: 73.0960449});
   const data = [
     { key: '1', value: 'Urdu' },
     { key: '2', value: 'English' },
     { key: '3', value: 'French' }
   ];
+  const [email, setEmail] = useState('')
+  const [password, setPassword] = useState('')
+  const [confirmPassword, setConfirmPassword] = useState('')
+  const [firstName, setFirstName] = useState('')
+  const [lastName, setLastName] = useState('')
+  const [phoneNumber, setPhoneNumber] = useState('')
+  const [rating, setRating] = useState(0.0)
+  const [currentLocation, setCurrentLocation] = useState(0);
+  useEffect(() => {
+    const locationWatchId = Geolocation.watchPosition(
+      position => {
+        const { latitude, longitude } = position.coords;
+        setCurrentLocation({ latitude, longitude });
+        console.log({ latitude, longitude });
+      },
+      error => console.error(error),
+      { enableHighAccuracy: true, distanceFilter: 10 }
+    );
+  
+    // Clean up by clearing the watch subscriptions
+    return () => {
+      Geolocation.clearWatch(locationWatchId);
+    };
+  }, [setCurrentLocation])
+
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
   const [confirmPassword, setConfirmPassword] = useState('');
@@ -35,6 +62,7 @@ const [location, setLocation] = useState({latitude: 33.6224444, longitude: 73.09
         .createUserWithEmailAndPassword(email, password)
         .then(async (response) => {
           await AsyncStorage.setItem('userId', response.user.uid);
+          await AsyncStorage.setItem('check', response.user.uid);
           const characters = 'ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789';
           let randomId = '';
         
@@ -43,17 +71,20 @@ const [location, setLocation] = useState({latitude: 33.6224444, longitude: 73.09
             randomId += characters.charAt(randomIndex);
           }
           const userRef = firestore().collection('users').doc(response.user.uid);
+          const { latitude, longitude } = currentLocation
+          const geoPoint = new firestore.GeoPoint(latitude, longitude);
           userRef
             .set({
               firstName: firstName,
               lastName: lastName,
               phoneNumber: phoneNumber,
               email: email,
-              language: language,
+              languages: selectedLanguages,
               rating: 5,
-              location: location,
+              location: geoPoint,
               isActive:true,
-              isEngaged:false
+              isEngaged:false,
+              role : "volunteer"
            
             })
             .then(() => {
@@ -115,16 +146,17 @@ const [location, setLocation] = useState({latitude: 33.6224444, longitude: 73.09
         <TextField2 placeholder="Confirm Password" secureTextEntry={true} name="lock" onChangeText={setConfirmPassword} value={confirmPassword} />
         <TextField2 placeholder="Phone Number" name="phone" onChangeText={setPhoneNumber} value={phoneNumber}
         />
-
-        <SelectList
-          setSelected={(val) => setLanguage(val)}
+<View style = {{flexDirection:'column'}}>
+        <MultipleSelectList
+        setSelected={(val) => setSelectedLanguages(val)}
           data={data}
           save="value"
+          multiSelect={true}
           closeicon={<MaterialIcons style={{ marginTop: 10, marginLeft: 7 }} name="clear" size={25} color={'white'}></MaterialIcons>}
           arrowicon={<Icon name="chevron-down" size={22} style={{ marginTop: 5 }} color={'white'} />}
           searchicon={<Icon name="search-outline" style={{ marginBottom: 4 }} size={20} color={'white'} />}
           boxStyles={{
-            width: 250, borderColor: '#1F4A83',
+            width: 250, height:80, borderColor: '#1F4A83',
             borderRadius: 25, marginTop: 17, marginLeft: 18
           }}
           placeholderTextColor={colors.primary}
@@ -136,11 +168,17 @@ const [location, setLocation] = useState({latitude: 33.6224444, longitude: 73.09
           fontFamily='Poppins-SemiBold'
           dropdownTextStyles={{ fontSize: 15, color: "#1F4A83" }}
           dropdownStyles={{ height: 120, width: 250, marginLeft: 20, backgroundColor: 'white', borderColor: 'white' }}
-          badgeTextStyles={{ fontfamily: 'Poppins-Regular', fontSize: 12 }}
-          badgeStyles={{ backgroundColor: '#274116' }}
+          badgeTextStyles={{ fontfamily: 'Poppins-Regular', color:'#1F4A83', fontSize: 14 }}
+          badgeStyles={{ backgroundColor: 'white'  }}
           labelStyles={{ fontSize: 2, fontFamily: 'Poppins-SemiBold' }}
           label="Categories"
+          style={{ marginTop: 4 }} 
         />
+        <View style ={{ borderBottomWidth: 0.5, 
+          borderColor:'#D5D8DC', width:300 ,  marginLeft:30, marginBottom:20,
+           }}>
+           </View>
+           </View>
         {/* <TextField2 placeholder="Confirm Password" secureTextEntry={true} name="lock" onChangeText={setConfirmPassword} value={confirmPassword} /> */}
 
         <View style={{ marginTop: 540, marginLeft: 80, position: 'absolute' }}>

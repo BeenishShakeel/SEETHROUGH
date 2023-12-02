@@ -151,12 +151,12 @@ async function deleteaccount() {
  // <ImageBackground
           // source={require('../assets/images/new4.jpg')}
           // style={styles.image}>
-  const url = "https://www.vecteezy.com/vector-art/606261-eye-logo-vector"
+  const url = "https://www.pinterest.com/pin/855824735466276690"
     const share = async() =>
     {
         
         const  shareOptions ={
-            message:'My Friend and Family Please Join See Through My Eyes To Help Blind People',
+            message:'You can join  See Through My Eyes To Help Blind People',
             url,
           
         } 

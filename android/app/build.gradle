@@ -169,6 +169,7 @@ dependencies {
     implementation 'com.facebook.fresco:animated-webp:2.0.0'
     implementation 'com.facebook.fresco:webpsupport:2.0.0'
     implementation("androidx.swiperefreshlayout:swiperefreshlayout:1.0.0")
+    implementation ('com.google.android.gms:play-services-location:21.0.1') 
     implementation project(':react-native-twilio-video-webrtc')
     implementation project(':@react-native-voice_voice')
     implementation project(':react-native-contacts')
