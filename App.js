@@ -7,11 +7,13 @@ import Aboutus from './src/Aboutus';
 import Open from './src/open';
 import Profile from './src/Profile';
 import Review from './src/review';
+import Main from './src/main'
 import BlindSignup from './src/blindsignup';
 import SignUp from './src/signUp';
 import EditProfile from './src/EditProfile'
 import Verification from './src/verification'
 import AdminNav from './src/AdminNav';
+import Back5 from './src/back5';
 import Gps from './src/gps';
 import Splash from './src/splashScreen';
 import MaterialIcons from "react-native-vector-icons/MaterialIcons";
@@ -27,7 +29,7 @@ import messaging from "@react-native-firebase/messaging";
 import notifee from '@notifee/react-native';
 import Rev from './src/rev';
 import { Alert } from 'react-native';
-
+import Writtensignup from './src/writtensignup'
 function onMessageReceived(message, navigation) {
   console.log("Notification data: ", message.data);
   notifee.displayNotification({
@@ -88,6 +90,8 @@ function Root({ navigation }) {
 export default function App() {
   return (
     <NavigationContainer>
+      <Stack.Navigator screenOptions={{ headerShown: false }} initialRouteName='main' >
+      <Stack.Screen name="main" component={Main} 
       <Stack.Navigator screenOptions={{ headerShown: false }} initialRouteName='open'>
         <Stack.Screen name="open" component={Open} />
         <Stack.Screen name="voiceOperations" component={VoiceOperations} />
@@ -96,6 +100,7 @@ export default function App() {
         <Stack.Screen name="blindsignup" component={BlindSignup} />
         <Stack.Screen name="SignUp" component={SignUp} />
         <Stack.Screen name="AdminNav" component={AdminNav} />
+        <Stack.Screen name="back5" component={Back5} />
         <Stack.Screen name="Login" component={Login} />
         <Stack.Screen name="Verification" component={Verification} />
         <Stack.Screen name="EditProfile" component={EditProfile} />
@@ -104,6 +109,7 @@ export default function App() {
         <Stack.Screen name='ContactList' component={ContactsList}></Stack.Screen>
         <Stack.Screen name='Contact' component={Contact}></Stack.Screen>
         <Stack.Screen name='rev' component={Rev}></Stack.Screen>
+        <Stack.Screen name='writtensignup' component={Writtensignup}></Stack.Screen>
       </Stack.Navigator>
     </NavigationContainer>
 

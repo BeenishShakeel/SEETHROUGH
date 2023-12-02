@@ -75,7 +75,7 @@ const Video = ({navigation, route}) => {
   const _onRoomDidDisconnect = async ({ roomName, error }) => {
     console.log('[Disconnect]ERROR: ', error);
 
-    //setStatus('disconnected');
+
     Tts.speak('Room disconnected');
     navigation.navigate('rev');
     //firestore().collection('users').doc(route.params.userID).update({isEngaged: false});
@@ -90,7 +90,7 @@ const Video = ({navigation, route}) => {
   const _onRoomDidFailToConnect = error => {
     console.log('[FailToConnect]ERROR: ', error);
 
-    //setStatus('disconnected');
+
     Tts.speak('Room disconnected');
     firestore().collection('users').doc(route.params.userID).update({isEngaged: false})
     navigation.goBack();

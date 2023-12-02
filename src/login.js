@@ -1,5 +1,7 @@
 import React, {useState,  useEffect} from "react";
 import {View, KeyboardAvoidingView, TouchableOpacity, Text, StyleSheet , Image ,ToastAndroid} from "react-native";
+import Background from "./background";
+import Btn1 from "../assets/buttons/btn1";
 import TextField from "./textField";
 import { colors } from "../assets/constants/colors";
 import auth from '@react-native-firebase/auth';
@@ -31,19 +33,16 @@ export default function Login({navigation}){
           try {
             await AsyncStorage.setItem("uid", response.user.uid);
     
-            
+            // Now, query Firestore to check if the user is an admin based on their email.
             firestore()
               .collection('users')
               .doc(response.user.uid)
               .get()
               .then((userDoc) => {
                 const userData = userDoc.data();
-                console.log(email)
-               
-                if (email === "admin1@gmail.com" && password === "admin123") {
+                if (userData && userData.email === "admin@gmail.com") {
                   navigation.navigate("AdminNav");
-                } 
-                else {
+                } else {
                   navigation.navigate("Root");
                 }
               })
@@ -61,6 +60,26 @@ export default function Login({navigation}){
         });
     }
   
+
+  /*  function LoginAuth(){
+        auth().signInWithEmailAndPassword(email, password).
+         then (async(response)=> {
+            try {
+                await AsyncStorage.setItem("uid", response.user.uid).then(
+                    ()=> {ToastAndroid.show("Logged In", ToastAndroid.SHORT)
+                    if (email=="admin@gmail.com" && password=="admin123"){
+                        navigation.navigate("AdminNav");
+                    }
+                    else{
+                        navigation.navigate("Root");
+                    }
+                })
+              } catch (error) {
+                console.log(error);
+              }       
+         }).
+          catch((error)=> {ToastAndroid.show(error.message, ToastAndroid.SHORT)})
+     }*/
    
 
     return(
@@ -72,7 +91,7 @@ export default function Login({navigation}){
         <View style = {{ backgroundColor:'white' , borderTopRightRadius:80 , height:800}}>
             <Text style={{fontFamily: "Poppins-BoldItalic", marginBottom:20, fontSize: 32, alignSelf:"center", color: '#1F4A83', marginTop:50}}>LOGIN</Text>
          
-             <TextField placeholder="Email" keyboardType="email-address" name="mail-outline" onChangeText={setEmail} value={email} />
+            <TextField placeholder="Email" keyboardType="email-address" name="mail-outline" onChangeText={setEmail} value={email} />
              <TextField placeholder="Password" secureTextEntry={true} name="lock" onChangeText={setPassword} value={password} /> 
             <TouchableOpacity style={{backgroundColor:'#1F4A83', borderRadius: 10, justifyContent: "center", alignItems: "center", marginLeft:120, marginTop: 40, height: 49, width: 130}} onPress={()=>LoginAuth()} >
       <Text style={{color: "white", fontSize: 20,  fontFamily: "Poppins-SemiBold"}}> Login </Text>
@@ -109,4 +128,3 @@ const styles = StyleSheet.create({
         borderRadius: 13,
     }
 });
-
