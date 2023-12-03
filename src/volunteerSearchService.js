@@ -19,7 +19,7 @@ export const VolunteerSearchWithRating = () => {
       .where('isActive', '==', true)
       .where('isEngaged', '==', false)
       .where('languages', 'array-contains', b_language)
-      .orderBy('rating')
+      .orderBy('rating', 'desc')
       .limit(1)
       .get()
       .then(querySnapshot => {

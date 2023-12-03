@@ -20,41 +20,31 @@ export default function SignUp({ navigation }) {
     { key: '2', value: 'English' },
     { key: '3', value: 'French' }
   ];
-  const [email, setEmail] = useState('')
-  const [password, setPassword] = useState('')
-  const [confirmPassword, setConfirmPassword] = useState('')
-  const [firstName, setFirstName] = useState('')
-  const [lastName, setLastName] = useState('')
-  const [phoneNumber, setPhoneNumber] = useState('')
-  const [rating, setRating] = useState(0.0)
-  const [currentLocation, setCurrentLocation] = useState(0);
-  useEffect(() => {
-    const locationWatchId = Geolocation.watchPosition(
-      position => {
-        const { latitude, longitude } = position.coords;
-        setCurrentLocation({ latitude, longitude });
-        console.log({ latitude, longitude });
-      },
-      error => console.error(error),
-      { enableHighAccuracy: true, distanceFilter: 10 }
-    );
-  
-    // Clean up by clearing the watch subscriptions
-    return () => {
-      Geolocation.clearWatch(locationWatchId);
-    };
-  }, [setCurrentLocation])
-
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
   const [confirmPassword, setConfirmPassword] = useState('');
   const [firstName, setFirstName] = useState('');
   const [lastName, setLastName] = useState('');
   const [phoneNumber, setPhoneNumber] = useState('');
+  const [rating, setRating] = useState(0.0);
+  const [currentLocation, setCurrentLocation] = useState(0);
+  //useEffect(() => {
+  //   const locationWatchId = Geolocation.watchPosition(
+  //     position => {
+  //       const { latitude, longitude } = position.coords;
+  //       setCurrentLocation({ latitude, longitude });
+  //       console.log({ latitude, longitude });
+  //     },
+  //     error => console.error(error),
+  //     { enableHighAccuracy: true, distanceFilter: 10 }
+  //   );
+  
+  //   // Clean up by clearing the watch subscriptions
+  //   return () => {
+  //     Geolocation.clearWatch(locationWatchId);
+  //   };
+  // }, [setCurrentLocation])
 
-  useEffect(() => {
-    
-  }, []);
 
   function SignUpAuth() {
     if (password === confirmPassword) {
@@ -71,8 +61,8 @@ export default function SignUp({ navigation }) {
             randomId += characters.charAt(randomIndex);
           }
           const userRef = firestore().collection('users').doc(response.user.uid);
-          const { latitude, longitude } = currentLocation
-          const geoPoint = new firestore.GeoPoint(latitude, longitude);
+          //const { latitude, longitude } = currentLocation
+         // const geoPoint = new firestore.GeoPoint(latitude, longitude);
           userRef
             .set({
               firstName: firstName,
@@ -81,7 +71,7 @@ export default function SignUp({ navigation }) {
               email: email,
               languages: selectedLanguages,
               rating: 5,
-              location: geoPoint,
+              //location: geoPoint,
               isActive:true,
               isEngaged:false,
               role : "volunteer"
@@ -104,35 +94,7 @@ export default function SignUp({ navigation }) {
       ToastAndroid.show("Your Password doesn't match!", ToastAndroid.SHORT);
     }
   }
-  /*function SignUpAuth(){
-   
-      if(password===confirmPassword){
-    
-          auth().createUserWithEmailAndPassword(email, password).
-           then((response) => {
-              database().ref(`/users/${response.user.uid}`).set({
-              firstName : firstName,
-              lastName : lastName,
-              phoneNumber : phoneNumber,
-              email: email,
-              language:language
- 
-          }).then((res) => {
-              ToastAndroid.show("User Created Successfully", ToastAndroid.SHORT)
-              navigation.navigate("Login")
-          })
-          }).
-          
-      catch((error) => {
-          ToastAndroid.show(error.message, ToastAndroid.SHORT);
-          console.log("Error : ", error.message)
-      })
-  }
-  else{
-      ToastAndroid.show("Your Password doesn't match!", ToastAndroid.SHORT);
-  }
-  }
-  */
+  
   return (
     <View style={{ flex: 1, backgroundColor: 'white' }}>
       <View style={{ backgroundColor: '#1F4A83', height: 1000, marginTop: 60, width: 370, borderTopLeftRadius: 80, borderTopRightRadius: 80 }}>
