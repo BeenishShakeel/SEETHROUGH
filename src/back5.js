@@ -15,7 +15,7 @@ export default function Back5({ children, navigation }) {
 
     return (
       <TouchableOpacity style={styles.buttonContainer} onPress={handleSignUpPress}>
-        <Text style={styles.buttonText}>Sign Up !!!!</Text>
+        <Text style={styles.buttonText}>  Sign Up </Text>
       </TouchableOpacity>
     );
   };

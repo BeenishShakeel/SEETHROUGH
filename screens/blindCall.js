@@ -37,6 +37,10 @@ const BlindVideo = ({ navigation, route }) => {
   let timer = null;
   const TIMEOUT = 500;
 
+  useEffect(() => {
+    _onConnectButtonPress();
+  }, []);
+
   const debounce = (operation, op) => {
     if (timer) {
       clearTimeout(timer);
@@ -140,7 +144,6 @@ const BlindVideo = ({ navigation, route }) => {
 
   const _onRoomDidDisconnect = async ({ roomName, error }) => {
     console.log('[Disconnect]ERROR: ', error);
-
     setStatus('disconnected');
     Tts.speak('Room disconnected');
     firestore().collection('users').doc(route.params.userID).update({ isEngaged: false });
@@ -179,16 +182,11 @@ const BlindVideo = ({ navigation, route }) => {
 
   const _onParticipantRemovedVideoTrack = ({ participant, track }) => {
     console.log('onParticipantRemovedVideoTrack: ', participant, track);
-
     const videoTracksLocal = videoTracks;
     videoTracksLocal.delete(track.trackSid);
-
     setVideoTracks(videoTracksLocal);
+    twilioRef.current.disconnect();
   };
-
-
-  
-
   return (
     <View style={styles.container}>
       {

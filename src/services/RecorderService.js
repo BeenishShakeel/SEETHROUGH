@@ -10,8 +10,8 @@ class RecorderService {
   onStartRecord = async () => {
     try {
       const result = await this.audioRecorderPlayer.startRecorder();
-      console.log(result);
-      Tts.speak('recording stopped');
+      console.log('result',result);
+      
     } catch (error) {
       console.error('Error starting recording:', error);
     }
@@ -21,6 +21,8 @@ class RecorderService {
     try {
       const result = await this.audioRecorderPlayer.stopRecorder();
       console.log(result);
+      // navigation.navigate('open');
+      Tts.speak('recording stopped');
     } catch (error) {
       console.error('Error stopping recording:', error);
     }

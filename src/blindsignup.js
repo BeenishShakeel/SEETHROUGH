@@ -29,30 +29,62 @@ export default function BlindSignup({ navigation }) {
   const [audio, setaudio] = useState('')
   const[lang,setlang] =  useState('')
   const langRef = useRef('');
+  const nameRef = useRef('');
+  const nonumber  = useRef('');
+
   const [phoneNumber, setPhoneNumber] = useState('');
   const [currentLocation, setCurrentLocation] = useState(0);
   const [audioInstance, setAudioInstance] = useState(null);
 
+  // useEffect(() => {
+  //   const locationWatchId = Geolocation.watchPosition(
+  //     position => {
+  //       const { latitude, longitude } = position.coords;
+  //       setCurrentLocation({ latitude, longitude });
+  //       console.log({ latitude, longitude });
+  //     },
+  //     error => console.error(error),
+  //     { enableHighAccuracy: true, distanceFilter: 10 }
+  //   );
+  
+  //   // Clean up by clearing the watch subscriptions
+  //   return () => {
+  //     Geolocation.clearWatch(locationWatchId);
+  //   };
+  // }, [setCurrentLocation]);
+  const onSpeechError = (e) => {
+   
+    console.log("Speech recognition error:", e.error);
+  
+    
+    if (e.error.code === "6") { 
+      Tts.speak("Please speak again.");
+  
+    
+      setTimeout(() => {
+   
+        start1();
+      }, 1200); 
+    }
+    if (e.error.code === "7") {
+      Tts.speak("Sorry, I didn't understand. Please speak more clearly.");
+      
+      setTimeout(() => {
+        start1();
+      }, 4000);
+    }
+  };
   useEffect(() => {
-    const locationWatchId = Geolocation.watchPosition(
-      position => {
-        const { latitude, longitude } = position.coords;
-        setCurrentLocation({ latitude, longitude });
-        console.log({ latitude, longitude });
-      },
-      error => console.error(error),
-      { enableHighAccuracy: true, distanceFilter: 10 }
-    );
   
-    // Clean up by clearing the watch subscriptions
+    Voice.onSpeechError = onSpeechError;
+  
+    
     return () => {
-      Geolocation.clearWatch(locationWatchId);
+      Voice.removeAllListeners();
     };
-  }, [setCurrentLocation]);
-  
+  }, []);
   useEffect(() => {
 
-    // sendAkt();
     play1()
     return () => {
       stopRecording();
@@ -61,8 +93,19 @@ export default function BlindSignup({ navigation }) {
     };
 
   }, []);
-  const play1 = (audioURL) => {
-    const sound1 = new Sound(require('./media112.mp3'),
+  const play3 = async (audioURL) => {
+    Tts.addEventListener('tts-finish', () => {
+      isTtsFinished = true;
+    });
+ 
+    Tts.speak("What is your name?");
+    isTtsFinished = false;
+    while (!isTtsFinished) {
+      await new Promise(resolve => setTimeout(resolve, 100));
+
+    }
+    nameRef.current = "yes";
+    const sound1 = new Sound(require('./namee.mp3'),
       (error, sound) => {
         if (error) {
           alert('error' + error.message);
@@ -71,7 +114,23 @@ export default function BlindSignup({ navigation }) {
         setAudioInstance(sound);
         sound1.play(() => {
           sound1.release();
-          play2();
+          start1()
+        });
+      });
+  }
+  const play1 = (audioURL) => {
+    const sound2 = new Sound(require('./media112.mp3'),
+      (error, sound) => {
+        if (error) {
+          alert('error' + error.message);
+          return;
+        }
+        setAudioInstance(sound);
+        sound2.play(() => {
+          sound2.setSpeed(0.4);
+          sound2.release();
+          play2()
+
         });
       });
   }
@@ -123,6 +182,12 @@ export default function BlindSignup({ navigation }) {
     //stopRecording();
     console.log("stop")
   }
+  const play3Promise = () => {
+    return new Promise((resolve) => {
+      play3(); 
+      resolve();
+    });
+  };
   const stopRecording = async () => {
     try {
       await Voice.stop()
@@ -141,78 +206,19 @@ export default function BlindSignup({ navigation }) {
     // Voice.onSpeechResults = onSpeechResultsHandler2;
   }
   const onSpeechResultsHandler2 = async (e) => {
-    console.log(e.value.toString())
-    console.log("langvalue" + langRef.current);
-    if (langRef.current.includes("yes"))
+    console.log(nameRef.current)
+    if (nameRef.current.includes("yes"))
     {
-
-    
-    if (e.value.toString() === "Urdu" || e.value.toString() === "English" || e.value.toString() === "French") {
       let text3 = e.value.toString();
-      await AsyncStorage.setItem('language', text3);
-      setlanguage(text3)
-      setinfo()
-    }
-    else{
-    
+      //setname(text3)
+      const name1= text3.split(',')[0].trim();
+      await AsyncStorage.setItem('name', name1);
+      nameRef.current = "no";   
+      nonumber.current = "yes";
+      console.log("name setted")
+   
+
       
-
-      Tts.addEventListener('tts-finish', () => {
-        isTtsFinished = true;
-      });
-    
-      Tts.speak("Kindly speak your language again?");
-      isTtsFinished = false;
-      while (!isTtsFinished) {
-        await new Promise(resolve => setTimeout(resolve, 100));
-
-      }
-      const sound2 = new Sound(require('./urdur1.mp3'),
-      (error, sound) => {
-        if (error) {
-          alert('error' + error.message);
-          return;
-        }
-        sound2.play(() => {
-          sound2.setSpeed(0.4);
-          sound2.release();
-        });
-      });
-     
-     
-      setTimeout(() => {
-
-        start1()
-
-      }, 2500);
-      langRef.current = "yes";
-    }
-  }
-    else {
-     
-      
-      let text1 = e.value.toString();
-      const phoneNumber = text1.split(',')[0].trim();
-      const phoneNumberWithoutSpaces = phoneNumber.replace(/\s/g, ''); 
-      const phoneNumberLength = phoneNumberWithoutSpaces.length;
-      console.log(phoneNumberLength)
-      if (phoneNumberLength == 11) {
-        setPhoneNumber(phoneNumberWithoutSpaces);
-        langRef.current = "yes";
-        
-      
-
-        await AsyncStorage.setItem('phonenumber', phoneNumberWithoutSpaces);
-        console.log(phoneNumberWithoutSpaces)
-        const options = {
-          method: 'GET',
-          url: 'https://nlp-translation.p.rapidapi.com/v1/translate',
-          params: { text: "which language do you speak", to: 'ur', from: 'en' },
-          headers: {
-            'X-RapidAPI-Key': 'bac0b4a01dmsh637f968c8035314p1dc8b0jsn281bde6eebf7',
-            'X-RapidAPI-Host': 'nlp-translation.p.rapidapi.com'
-          }
-        };
 
         let isTtsFinished = false;
         let everCalled = 1;
@@ -237,13 +243,137 @@ export default function BlindSignup({ navigation }) {
               sound2.release();
             });
           });
+       
+         
         setTimeout(() => {
 
           start1()
 
         }, 2000);
+        setTimeout(() => {
+
+          langRef.current = "yes"; 
+
+        }, 2000);
+     
+       
+    }
+    console.log(e.value.toString())
+    console.log("langvalue" + langRef.current);
+   if (langRef.current.includes("yes"))
+    {
+
+    
+    if (e.value.toString() === "Urdu" || e.value.toString() === "English" || e.value.toString() === "French") 
+    {
+      let text3 = e.value.toString();
+      await AsyncStorage.setItem('language', text3);
+      setlanguage(text3)
+      setinfo()
+      langRef.current = "no"; 
+    }
+    
+    if(langRef.current.includes("yes"))
+    {
+      
+
+      Tts.addEventListener('tts-finish', () => {
+        isTtsFinished = true;
+      });
+    
+      Tts.speak("Kindly speak your language again?");
+      isTtsFinished = false;
+      while (!isTtsFinished)
+      {
+        await new Promise(resolve => setTimeout(resolve, 100));
+
       }
+      const sound2 = new Sound(require('./urdur1.mp3'),
+      (error, sound) => {
+        if (error) 
+        {
+          alert('error' + error.message);
+          return;
+        }
+        sound2.play(() => {
+          sound2.setSpeed(0.4);
+          sound2.release();
+        });
+      });
+     
+     
+      setTimeout(() => {
+
+        start1()
+
+      }, 2500);
+      langRef.current = "yes";
+    }
+  }
+
+    else
+     {     
+      let text1 = e.value.toString();
+      const phoneNumber = text1.split(',')[0].trim();
+      const phoneNumberWithoutSpaces = phoneNumber.replace(/\s/g, ''); 
+      const phoneNumberLength = phoneNumberWithoutSpaces.length;
+      console.log(phoneNumberLength)
+      if (phoneNumberLength == 11) {
+        setPhoneNumber(phoneNumberWithoutSpaces);
+     
+        nameRef.current = "yes"
+        await AsyncStorage.setItem('phonenumber', phoneNumberWithoutSpaces);
+        console.log(phoneNumberWithoutSpaces)  
+          
+        
+        const options = 
+        {
+          method: 'GET',
+          url: 'https://nlp-translation.p.rapidapi.com/v1/translate',
+          params: { text: "which language do you speak", to: 'ur', from: 'en' },
+          headers: {
+            'X-RapidAPI-Key': 'bac0b4a01dmsh637f968c8035314p1dc8b0jsn281bde6eebf7',
+            'X-RapidAPI-Host': 'nlp-translation.p.rapidapi.com'
+          }
+        };
+        if(nameRef.current.includes("yes"))
+        {
+          Tts.addEventListener('tts-finish', () => {
+            isTtsFinished = true;
+          });
+       
+          Tts.speak("What is your name?");
+          isTtsFinished = false;
+          while (!isTtsFinished) {
+            await new Promise(resolve => setTimeout(resolve, 100));
+      
+          }
+          nameRef.current = "yes";
+          const sound1 = new Sound(require('./namee.mp3'),
+            (error, sound) => {
+              if (error) {
+                alert('error' + error.message);
+                return;
+              }
+              setAudioInstance(sound);
+              sound1.play(() => {
+                sound1.release();
+                start1()
+              });
+            });
+
+        }
+    
+    }
+      
+    
       else {
+        if(nonumber.current.includes("yes"))
+        {
+
+        }
+        else
+        {
 
         const sound2 = new Sound(require('./114.mp3'),
           (error, sound) => {
@@ -276,6 +406,7 @@ export default function BlindSignup({ navigation }) {
 
       }
     }
+    }
   }
 
   async function setinfo() {
@@ -286,14 +417,15 @@ export default function BlindSignup({ navigation }) {
     try {
       const language1 = await AsyncStorage.getItem('language');
       const phone = await AsyncStorage.getItem('phonenumber');
+      const name = await AsyncStorage.getItem('name');
       console.log(userId);
       console.log(phone);
       console.log(language1);
   
       // Use the callback form to get the most up-to-date state
-      setCurrentLocation(prevLocation => {
-        const { latitude, longitude } = prevLocation;
-        const geoPoint = new firestore.GeoPoint(latitude, longitude);
+      // setCurrentLocation(prevLocation => {
+      //   const { latitude, longitude } = prevLocation;
+      //   const geoPoint = new firestore.GeoPoint(latitude, longitude);
   
         // Create a reference to the Firestore collection and set the data
         const userRef = firestore().collection('blind').doc(userId);
@@ -301,17 +433,21 @@ export default function BlindSignup({ navigation }) {
         userRef.set({
           phonenumber: phone,
           language: language1,
-          location: geoPoint,
+         // location: geoPoint,
+          name:name,
           role:"blind"
         });
   
-        return prevLocation;
-      });
+      //   return prevLocation;
+      // });
   
       ToastAndroid.show("Account Updated Successfully!", ToastAndroid.SHORT);
   
       await AsyncStorage.setItem('userId', userId);
       console.log('User ID saved successfully.');
+      // Voice.destroy(()=>{
+      //   Voice.removeAllListeners
+      // })
       navigation.navigate("open");
   
     } catch (error) {

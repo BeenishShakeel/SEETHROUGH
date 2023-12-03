@@ -22,7 +22,7 @@ export default function Main1({ navigation }) {
             }
             if(userString === null){
                 console.log('User ID:', userString);
-                Tts.speak('Double on the bottom of the screen to signup as a blind');
+                Tts.speak('Welcome! Double tap on the bottom of the screen to signup as a blind');
             }
             if(value !== null)
             {
