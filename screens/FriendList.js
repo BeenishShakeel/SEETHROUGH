@@ -30,12 +30,12 @@ export default function FriendList({ navigation, route}) {
                 case 1: {
                     // add to contactlist
                     myContactList();
-                    navigation.navigate('rev');
+                    navigation.navigate('rev',route.params.userID);
                 }
                     break;
                 case 2: {
                     // navigate back
-                    navigation.navigate('rev');
+                    navigation.navigate('rev',route.params.userID);
                     break;
                 }
             }

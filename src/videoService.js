@@ -9,7 +9,8 @@ export const setupVideoCall = (navigation, user) =>{
           console.log("Data: ", res.data);
           navigation.navigate('BlindVideo', {
               token: response.data.token,
-              userID : user.userID
+              userID : user.userID,
+              name: user.name
           });
         })
         .catch(err => console.error(err));

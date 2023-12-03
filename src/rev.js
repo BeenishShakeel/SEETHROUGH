@@ -6,15 +6,44 @@ import AsyncStorage from '@react-native-async-storage/async-storage';
 import firestore from '@react-native-firebase/firestore';
 import Tts from 'react-native-tts';
 import axios from 'axios';
-import open from '../src/open';
-const firebaseid = "asFea23WojeHhKbRUmSqBWKL9xM2";
-export default function Rev({navigation}){
+import open from '../src/open'; 
+export default function Rev({navigation,route}){
     const [review, setreview] = useState(0);
     const[language,setlangauge] = useState(0)
     const[rate,setrate] = useState(0)
     useEffect(() => {
-     getUserId()    
-  
+    getUserId();  
+      }, []);
+      const onSpeechError = (e) => {
+   
+        console.log("Speech recognition error:", e.error);
+      
+        
+        if (e.error.code === "6") { 
+      
+      
+        
+          setTimeout(() => {
+            navigation.navigate('open')
+           
+          }, 500); 
+        }
+        if (e.error.code === "7") {
+          
+          
+          setTimeout(() => {
+            navigation.navigate('open')
+          }, 500);
+        }
+      };
+      useEffect(() => {
+      
+        Voice.onSpeechError = onSpeechError;
+      
+        
+        return () => {
+          Voice.removeAllListeners();
+        };
       }, []);
      
 
@@ -49,7 +78,7 @@ export default function Rev({navigation}){
   
     
     const urdu = (audioURL) => {
-      const sound2 = new Sound(require('./urdur.mp3'),
+      const sound2 = new Sound(require('./nename.mp3'),
       (error, sound) => {
         if (error) {
           alert('error' + error.message);
@@ -63,27 +92,7 @@ export default function Rev({navigation}){
         });
       });
       
-      // const options = {
-      //   method: 'GET',
-      //   url: 'https://nlp-translation.p.rapidapi.com/v1/translate',
-      //   params: { text: "Kindly give a opinion about our volunteers. Your options for opinion  are  ,,  very good , good , Suitable, bad , very bad", to: 'ur', from: 'en' },
-      //   headers: {
-      //     'X-RapidAPI-Key': 'bac0b4a01dmsh637f968c8035314p1dc8b0jsn281bde6eebf7',
-      //     'X-RapidAPI-Host': 'nlp-translation.p.rapidapi.com'
-      //   }
-      // };
-      // axios.request(options).then(function (response) {
-      //   const result = response.data;
-      //   const text = result.translated_text[result.to];
-    
-      //   Tts.setDefaultRate(0.3);
-      //   Tts.speak(text);
-      //   Tts.addEventListener('tts-finish', () => {
-      //     start();
-      //   });
-  
-  
-      // })
+   
       
 
        }
@@ -91,7 +100,7 @@ export default function Rev({navigation}){
         const options = {
           method: 'GET',
           url: 'https://nlp-translation.p.rapidapi.com/v1/translate',
-          params: { text: "Kindly give a opinion about our volunteers. Your options for opinion  are  ,,  very good, good, satisfactory, bad, very bad", to: 'fr', from: 'en' },
+          params: { text: "Kindly give a opinion about our volunteers. Your options for opinion  are these ,  good , fine   ,   bad", to: 'fr', from: 'en' },
           headers: {
             'X-RapidAPI-Key': 'bac0b4a01dmsh637f968c8035314p1dc8b0jsn281bde6eebf7',
             'X-RapidAPI-Host': 'nlp-translation.p.rapidapi.com'
@@ -113,7 +122,7 @@ export default function Rev({navigation}){
        }
        const english = (audioURL) => {
         Tts.setDefaultRate(0.4)
-        Tts.speak("Kindly give a opinion about our volunteers. Your options for opinion  are  ,,  very good, good, satisfactory, bad, very bad");
+        Tts.speak("Kindly give a opinion about our volunteers. Your options for opinion  are these ,  good , fine   ,   bad");
       
        Tts.addEventListener('tts-finish', () => {
         start();
@@ -167,35 +176,27 @@ const onSpeechResultsHandler2 = async(e) => {
     const text1 = text.split(',')[0].trim().toLowerCase().replace(/\s/g, ''); ;
     console.log(text1)
     let rate = 0;
-    if (text1.includes("bahutbura")) {
+    if (text1.includes("bura")) {
       console.log("hellos");
       rate = 1;
-    } else if (text1.includes("bura")) {
-      rate = 2;
+    } else if (text1.includes("acha")) {
+      rate = 5;
     } else if (text1.includes("theek")) {
       rate = 3;
-    } else if (text1 === "bahutachcha") {
-      rate = 5;
     } else if (text1 === "achcha") {
-      rate = 4;
-    } else if (text1.includes("verygood")) {
       rate = 5;
     } else if (text1.includes("good")) {
-      rate = 4;
-    } else if (text1.includes("satisfactory")) {
+      rate = 5;
+    } else if (text1.includes("fine")) {
       rate = 3;
     }
-    else if (text1.includes("verybad")) {
-      rate = 1;
-    }
      else if (text1.includes("bad")) {
-      rate = 2;
+      rate = 1;
     } 
-    else if(text1.includes("skip"))
-    console.log(rate)
+    
    // const userString =  await AsyncStorage.getItem('userId');
    try{
-              const userRef = firestore().collection('users').doc(firebaseid);
+              const userRef = firestore().collection('users').doc(route.params.userID);
               // userRef.update({
               //   rating: rate,
               // });
@@ -211,7 +212,7 @@ const onSpeechResultsHandler2 = async(e) => {
               // Update the average rating in the user document
               userRef.update({
                 rating: roundedAverageRating,
-                ratings: userRatings, // Update the ratings array
+                ratings: userRatings, 
               });
             } catch (error) {
               console.error('Error updating rating:', error);

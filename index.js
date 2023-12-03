@@ -42,7 +42,7 @@ async function callFunctions() {
 
 const onMessageReceived = (message) => {
 	Linking.openURL(
-		`helpify://Root/${message.data.roomID}`
+		`helpify://Root/${message.data.roomID}/${message.data.name}`
 	).catch((err) => {
 		console.error(err);
 	});

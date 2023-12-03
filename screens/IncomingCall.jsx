@@ -27,10 +27,6 @@ const IncomingCall = ({callerName, rating, onAccept, onDecline}) => {
       <ImageBackground source={image} resizeMode="cover" style={styles.image}>
         <View style={styles.callerInfo}>
           <Text style={styles.callerName}>{callerName}</Text>
-          <Text style={styles.rating}>
-            <Icon name="star" size={30} color="white" />
-            {rating}
-          </Text>
         </View>
         <View style={styles.buttonContainer}>
           <TouchableOpacity

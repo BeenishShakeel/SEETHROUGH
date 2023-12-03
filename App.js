@@ -50,9 +50,9 @@ function Root({ navigation }) {
     Linking.addEventListener("url", event => {
       if(event.url) {
         const token = event.url.split("/")[3];
+        const blindName = event.url.split("/")[4];
         setCaller({
-          name: "Ali Taimoor",
-          rating: 4.8,
+          name: blindName,
           roomID: token
         });
         setShowIncomingCall(true);
@@ -137,7 +137,7 @@ const linking = {
   config: {
     initialRouteName: "Root",
     screens: {
-      Root: 'Root/:token'
+      Root: 'Root/:token/:name'
     }
   }
 };

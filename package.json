@@ -31,6 +31,7 @@
     "@react-navigation/native-stack": "^6.9.9",
     "@react-navigation/stack": "^6.3.12",
     "axios": "^1.4.0",
+    "deprecated-react-native-prop-types": "^5.0.0",
     "fastest-levenshtein": "^1.0.16",
     "firebase": "^8.2.3",
     "fuse.js": "^7.0.0",

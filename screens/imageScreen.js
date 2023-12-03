@@ -9,7 +9,7 @@ export default function ImageScreen({ navigation, route }) {
                     <Text>Preview</Text>
                     <Image
                         source={{ uri: `data:image/jpg;base64,${route.params.uri}` }}
-                        style={styles.previewImage}
+                        style= {styles.previewImage}
                         resizeMode="contain"
                     />
                 </View>

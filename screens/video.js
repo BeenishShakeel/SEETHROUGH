@@ -1,10 +1,9 @@
 import React, { useRef, useState, useEffect } from 'react';
 import { TwilioVideoLocalView, TwilioVideoParticipantView, TwilioVideo } from 'react-native-twilio-video-webrtc';
-import { View, Text, TouchableOpacity, StyleSheet, TextInput, Button, Animated } from 'react-native';
+import { View, Text, TouchableOpacity, StyleSheet, Animated } from 'react-native';
 import Tts from 'react-native-tts';
 import firestore from '@react-native-firebase/firestore';
-import ViewShot from "react-native-view-shot";
-import { GestureDetector, Gesture, PinchGestureHandler, State } from 'react-native-gesture-handler';
+import { PinchGestureHandler, State } from 'react-native-gesture-handler';
 
 const Video = ({ navigation, route }) => {
   const [isAudioEnabled, setIsAudioEnabled] = useState(true);
@@ -12,11 +11,9 @@ const Video = ({ navigation, route }) => {
   const [videoTracks, setVideoTracks] = useState(new Map());
   const [token, setToken] = useState(route.params.token);
   const twilioRef = useRef(null);
-  const viewShotRef = useRef();
-  const pinch = Gesture.Pinch();
+  const [isVideoEnabled, setIsVideoEnabled] = useState(true);
   const scale = new Animated.Value(1);
   const pinchScale = new Animated.Value(1);
-  const transform = Animated.multiply(scale, pinchScale);
 
   onPinchEvent = Animated.event(
     [{ nativeEvent: { scale: scale } }],
@@ -52,11 +49,6 @@ const Video = ({ navigation, route }) => {
     twilioRef.current.flipCamera();
   };
 
-  const _onCaptureButtonPress = async () => {
-    const imageURI = await viewShotRef.current.capture();
-    navigation.navigate('imageScreen', { uri: imageURI });
-  };
-
   const _onRoomDidConnect = ({ roomName, error }) => {
     console.log('onRoomDidConnect: ', roomName);
     Tts.speak('Room connected successfully')
@@ -67,12 +59,14 @@ const Video = ({ navigation, route }) => {
   const _onRoomDidDisconnect = async ({ roomName, error }) => {
     console.log('[Disconnect]ERROR: ', error);
     Tts.speak('Room disconnected');
+    setStatus('disconnected');
     firestore().collection('users').doc(route.params.userID).update({ isEngaged: false });
     navigation.goBack();
   };
 
   const _onRoomDidFailToConnect = error => {
     console.log('[FailToConnect]ERROR: ', error);
+    setStatus('disconnected');
     Tts.speak('Room disconnected');
     firestore().collection('users').doc(route.params.userID).update({ isEngaged: false })
     navigation.goBack();
@@ -92,108 +86,95 @@ const Video = ({ navigation, route }) => {
     );
   };
 
-  const _onParticipantRemovedVideoTrack = () => {
+  const _onParticipantRemovedVideoTrack = ({ participant, track }) => {
     twilioRef.current.disconnect();
+  }
+
+  const _onOffCameraFeed = event => {
+    console.log("off feed...");
+    twilioRef.current.setLocalVideoEnabled(!isVideoEnabled)
+      .then(isEnabled => {
+        console.log("isEnabled: ", isEnabled);
+        setIsVideoEnabled(isEnabled);
+      });
   };
+
 
   useEffect(() => {
     _onConnectButtonPress();
   }, [])
 
   return (
-
-    <ViewShot ref={viewShotRef} style={{ flex: 1 }} options={{ format: 'jpg', quality: 0.9, result: 'base64' }}>
-      <View style={styles.container}>
-        {
-          status === 'disconnected' &&
-          <View>
-            <Text style={styles.welcome}>
-              React Native Twilio Video
-            </Text>
-            <TextInput
-              style={styles.input}
-              autoCapitalize='none'
-              value={token}
-              onChangeText={(text) => setToken(text)}>
-            </TextInput>
-            <Button
-              title="Connect"
-              style={styles.button}
-              onPress={_onConnectButtonPress}>
-            </Button>
-          </View>
-        }
-
-        {
-          (status === 'connected' || status === 'connecting') &&
-          <View style={styles.callContainer}>
-            {
-              status === 'connected' &&
-              <PinchGestureHandler
-                onGestureEvent={onPinchEvent}
-                onHandlerStateChange={onPinchStateChange}
+    <View style={styles.container}>
+      {
+        (status === 'connected' || status === 'connecting') &&
+        <View style={styles.callContainer}>
+          {
+            status === 'connected' &&
+            <PinchGestureHandler
+              onGestureEvent={onPinchEvent}
+              onHandlerStateChange={onPinchStateChange}
+            >
+              <Animated.View
+                style={[
+                  styles.remoteGrid,
+                  { transform: [{ scale: scale }] },
+                ]}
               >
-                <Animated.View
-                  style={[
-                    styles.remoteGrid,
-                    { transform: [{ scale: scale }] },
-                  ]}
-                >
-                  {
-                    Array.from(videoTracks, ([trackSid, trackIdentifier], k) => {
-                      if (k > 0)
-                        return <></>
-                      return (
-                        <TwilioVideoParticipantView
-                          style={styles.remoteVideo}
-                          key={trackSid}
-                          trackIdentifier={trackIdentifier}
-                        />
-                      )
-                    })
-                  }
-                </Animated.View>
-              </PinchGestureHandler>
-            }
-            <View
-              style={styles.optionsContainer}>
-              <TouchableOpacity
-                style={styles.optionButton}
-                onPress={_onEndButtonPress}>
-                <Text style={{ fontSize: 12, color: 'blue' }}>End</Text>
-              </TouchableOpacity>
-              <TouchableOpacity
-                style={styles.optionButton}
-                onPress={_onMuteButtonPress}>
-                <Text style={{ fontSize: 12, color: 'blue' }}>{isAudioEnabled ? "Mute" : "Unmute"}</Text>
-              </TouchableOpacity>
-              <TouchableOpacity
-                style={styles.optionButton}
-                onPress={_onFlipButtonPress}>
-                <Text style={{ fontSize: 12, color: 'blue' }}>Flip</Text>
-              </TouchableOpacity>
-              <TouchableOpacity
-                style={styles.optionButton}
-                onPress={_onCaptureButtonPress}>
-                <Text style={{ fontSize: 12, color: 'blue' }}>Capture</Text>
-              </TouchableOpacity>
-              <TwilioVideoLocalView
-                enabled={true}
-                style={styles.localVideo}
-              />
-            </View>
-          </View >
-        }
-        <TwilioVideo
-          ref={twilioRef}
-          onRoomDidConnect={_onRoomDidConnect}
-          onRoomDidDisconnect={_onRoomDidDisconnect}
-          onRoomDidFailToConnect={_onRoomDidFailToConnect}
-          onParticipantAddedVideoTrack={_onParticipantAddedVideoTrack}
-          onParticipantRemovedVideoTrack={_onParticipantRemovedVideoTrack}
-        />
-      </View >
-    </ViewShot>
+                {
+                  Array.from(videoTracks, ([trackSid, trackIdentifier], k) => {
+                    if (k > 0)
+                      return <></>
+                    return (
+                      <TwilioVideoParticipantView
+                        style={styles.remoteVideo}
+                        key={trackSid}
+                        trackIdentifier={trackIdentifier}
+                      />
+                    )
+                  })
+                }
+              </Animated.View>
+            </PinchGestureHandler>
+          }
+          <View
+            style={styles.optionsContainer}>
+            <TouchableOpacity
+              style={styles.optionButton}
+              onPress={_onEndButtonPress}>
+              <Text style={{ fontSize: 12, color: 'blue' }}>End</Text>
+            </TouchableOpacity>
+            <TouchableOpacity
+              style={styles.optionButton}
+              onPress={_onMuteButtonPress}>
+              <Text style={{ fontSize: 12, color: 'blue' }}>{isAudioEnabled ? "Mute" : "Unmute"}</Text>
+            </TouchableOpacity>
+            <TouchableOpacity
+              style={styles.optionButton}
+              onPress={_onFlipButtonPress}>
+              <Text style={{ fontSize: 12, color: 'blue' }}>Flip</Text>
+            </TouchableOpacity>
+            <TouchableOpacity
+              style={styles.optionButton}
+              onPress={_onOffCameraFeed}>
+              <Text style={{ fontSize: 12, color: 'blue' }}>Camera</Text>
+            </TouchableOpacity>
+            <TwilioVideoLocalView
+              enabled={true}
+              style={styles.localVideo}
+            />
+          </View>
+        </View >
+      }
+      <TwilioVideo
+        ref={twilioRef}
+        onRoomDidConnect={_onRoomDidConnect}
+        onRoomDidDisconnect={_onRoomDidDisconnect}
+        onRoomDidFailToConnect={_onRoomDidFailToConnect}
+        onParticipantAddedVideoTrack={_onParticipantAddedVideoTrack}
+        onParticipantRemovedVideoTrack={_onParticipantRemovedVideoTrack}
+      />
+    </View >
   );
 }
 const styles = StyleSheet.create({
