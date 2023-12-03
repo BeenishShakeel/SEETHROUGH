@@ -1,5 +1,7 @@
+import { Platform } from 'react-native';
 import AudioRecorderPlayer from 'react-native-audio-recorder-player';
 import Tts from 'react-native-tts';
+import RNFetchBlob from 'rn-fetch-blob';
 
 class RecorderService {
   
@@ -7,11 +9,19 @@ class RecorderService {
     this.audioRecorderPlayer = new AudioRecorderPlayer();
   }
 
-  onStartRecord = async () => {
+  resolvePath(recordingName) {
+    const dirs = RNFetchBlob.fs.dirs;
+    path = Platform.select({
+      android: `${dirs.MusicDir}/${recordingName}.mp3`
+    });
+    return path;
+  }
+
+  onStartRecord = async (recordingName) => {
     try {
-      const result = await this.audioRecorderPlayer.startRecorder();
+      const path = this.resolvePath(recordingName);
+      const result = await this.audioRecorderPlayer.startRecorder(path);
       console.log(result);
-      Tts.speak('recording stopped');
     } catch (error) {
       console.error('Error starting recording:', error);
     }
@@ -21,14 +31,21 @@ class RecorderService {
     try {
       const result = await this.audioRecorderPlayer.stopRecorder();
       console.log(result);
+      Tts.speak("Recording stopped");
     } catch (error) {
       console.error('Error stopping recording:', error);
     }
   };
   
-  onStartPlay = async () => {
+  onStartPlay = async (recordingName, stopBlocking) => {
     try {
-      const msg = await this.audioRecorderPlayer.startPlayer();
+      const path = this.resolvePath(recordingName);
+      this.audioRecorderPlayer.addPlayBackListener((info) => {
+        if(info.currentPosition === info.duration) {
+          stopBlocking();
+        }
+      });
+      const msg = await this.audioRecorderPlayer.startPlayer(path);
       console.log(msg);
     } catch (error) {
       console.error('Error playing recording:', error);

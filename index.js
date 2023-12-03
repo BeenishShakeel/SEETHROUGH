@@ -44,7 +44,7 @@ const onMessageReceived = (message) => {
 	Linking.openURL(
 		`helpify://Root/${message.data.roomID}`
 	).catch((err) => {
-		console.error(err); t
+		console.error(err);
 	});
 	return Promise.resolve();
 }

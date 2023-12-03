@@ -15,7 +15,7 @@ import com.rt2zz.reactnativecontacts.ReactNativeContacts;
 import com.github.wumke.RNImmediatePhoneCall.RNImmediatePhoneCallPackage;
 import com.seethroughmyeyes.MySendSmsPackage;
 import com.dooboolab.audiorecorderplayer.RNAudioRecorderPlayerPackage;
-
+import com.RNFetchBlob.RNFetchBlobPackage;
 
 
 public class MainApplication extends Application implements ReactApplication {

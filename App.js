@@ -1,5 +1,5 @@
 import React, { useCallback, useEffect } from 'react';
-import { Text, Linking } from 'react-native';
+import { Text, Linking, AppState } from 'react-native';
 import { NavigationContainer, useNavigation } from "@react-navigation/native";
 import { createStackNavigator } from '@react-navigation/stack';
 import { createBottomTabNavigator } from '@react-navigation/bottom-tabs';
@@ -35,6 +35,7 @@ import IncomingCall from "./screens/IncomingCall";
 import messaging from '@react-native-firebase/messaging';
 import { useState } from 'react';
 
+
 function Root({ navigation }) {
 
   const [showIncomingCall, setShowIncomingCall] = useState(false);
@@ -46,9 +47,9 @@ function Root({ navigation }) {
   }, [onMessageReceived]);
 
   useEffect(() => {
-    Linking.getInitialURL().then(url => {
-      if(url) {
-        const token = url.split("/")[3];
+    Linking.addEventListener("url", event => {
+      if(event.url) {
+        const token = event.url.split("/")[3];
         setCaller({
           name: "Ali Taimoor",
           rating: 4.8,
@@ -56,8 +57,19 @@ function Root({ navigation }) {
         });
         setShowIncomingCall(true);
       }
-    })
-    .catch(err => console.error(err));
+    });
+    // Linking.getInitialURL().then(url => {
+    //   if(url) {
+    //     const token = url.split("/")[3];
+    //     setCaller({
+    //       name: "Ali Taimoor",
+    //       rating: 4.8,
+    //       roomID: token
+    //     });
+    //     setShowIncomingCall(true);
+    //   }
+    // })
+    // .catch(err => console.error(err));
   }, []);
 
   const onMessageReceived = (message) => {
@@ -76,6 +88,8 @@ function Root({ navigation }) {
 
   const acceptCall = useCallback(() => {
     navigation.navigate("Video", { token: caller.roomID });
+    setShowIncomingCall(false);
+    setCaller(null);
   }, [caller]);
 
   if (showIncomingCall) {
@@ -132,7 +146,7 @@ export default function App() {
   
   return (
     <NavigationContainer linking={linking} fallback={<Text>Loading...</Text>}>
-      <Stack.Navigator screenOptions={{ headerShown: false }} initialRouteName='main' >
+      <Stack.Navigator screenOptions={{ headerShown: false }} initialRouteName='open' >
         <Stack.Screen name="main" component={Main} />
         <Stack.Screen name="open" component={Open} />
         <Stack.Screen name="voiceOperations" component={VoiceOperations} />

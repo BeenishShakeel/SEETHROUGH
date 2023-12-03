@@ -15,7 +15,7 @@ export default function Back5({ children, navigation }) {
 
     return (
       <TouchableOpacity style={styles.buttonContainer} onPress={handleSignUpPress}>
-        <Text style={styles.buttonText}>Sign Up !!!!</Text>
+        <Text style={styles.buttonText}>Sign Up</Text>
       </TouchableOpacity>
     );
   };
@@ -48,12 +48,11 @@ const styles = StyleSheet.create({
   buttonContainer: {
     position: "absolute",
     bottom: 16,
-    left: 250,
-    width: 100,
+    right: 5,
     height: 43,
     backgroundColor: "white",
     padding: 10,
-    borderRadius: 15,
+    borderRadius: 15
   },
   buttonText: {
     color: "#1F4A83",

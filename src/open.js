@@ -16,8 +16,6 @@ import { setupVideoCall } from "./videoService";
 import Recorder from "./services/RecorderService";
 import Fuse from 'fuse.js';
 
-
-
 const voiceOperations = new VoiceOperations();
 
 export default function Open({ navigation }) {
@@ -26,6 +24,7 @@ export default function Open({ navigation }) {
   const [lang, setlang] = useState("");
   const [contacts, setContacts] = useState([]);
   const [isRecording, setIsRecording] = useState(false);
+  let recordingName = "";
 
   const isFocused = useIsFocused();
 
@@ -45,7 +44,6 @@ export default function Open({ navigation }) {
     }
 
     Contacts.getAll().then(fetchedContacts => {
-      // console.log("Fetched contacts: ", fetchedContacts.length)
       setContacts(fetchedContacts);
     });
 
@@ -69,37 +67,37 @@ export default function Open({ navigation }) {
     Voice.onSpeechResults = onSpeechResultsHandler;
   }, [contacts]);
 
-  // useEffect(() => {
-  //   if (isRecordingMessage) {
-  //     // Tts.speak("Please tap the screen and speak your message");
-  //     start1();
-  //     // Voice.onSpeechResults = onSpeechResultsHandler;
-  //   }
-  // }, [isRecordingMessage]);
-  const start2 = async () => {
-    console.log("record audio");
-    Voice.destroy().then(() => {
-      Voice.onSpeechResults = onSpeechResultsHandler;
+  useEffect(() => {
+    if(recordingName) {
+      console.log("Recording name: ", recordingName);
       Recording();
-    });
-  }
+      Voice.destroy().then(() => {
+        Voice.onSpeechResults = onSpeechResultsHandler;
+      });
+    }
+  }, recordingName);
 
   const Recording = async () => {
     try {
-      console.log("start recording ");
-      Tts.speak('Recording started');
-      await Recorder.onStartRecord();
+      Tts.speak('Recording started. Please speak now.');
+      setIsRecording(true);
+      setTimeout(() => Recorder.onStartRecord(recordingName), 3000);
+      // await Recorder.onStartRecord(recordingName);
     } catch (error) {
       console.log("error raised", error);
     }
     console.log("stop Recording");
   }
 
-  const start = async () => {
-    console.log("start recording name");
+  const resetVoiceHandlerToCaptureRecordingName = async () => {
     Voice.destroy().then(() => {
-      Voice.onSpeechResults = onSpeechResultsHandler3;
-      startRecording();
+      Voice.onSpeechResults = getRecordingName;
+    });
+  }
+
+  const resetVoiceHandlerToDefault = () => {
+    Voice.destroy().then(() => {
+      Voice.onSpeechResults = onSpeechResultsHandler;
     });
   }
 
@@ -111,20 +109,17 @@ export default function Open({ navigation }) {
     });
   }
 
-
   const startRecording = async () => {
     try {
-      console.log("start message");
       await Voice.start('en-Us');
-    } catch (error) {
-      console.log("error raised", error);
+    } catch (err) {
+      console.error("error raised", err);
     }
-    console.log("stop startRecording");
   }
 
   const detectIntentText = useCallback((query) => {
     console.log("detecting")
-    axios.post("http://192.168.18.55:8000/get-response", { query: query, location: { latitude: lat, longitude: long } })
+    axios.post("http://192.168.18.11:8000/get-response", { query: query, location: { latitude: lat, longitude: long } })
       .then(async (response) => {
         // console.log("Response: ", response.data);
         if (response.data.intent === "search volunteer with good rating") {
@@ -223,13 +218,23 @@ export default function Open({ navigation }) {
           return;
         }
         else if (response.data.intent === "Start recording") {
-          setTimeout(start,5000);
+          resetVoiceHandlerToCaptureRecordingName();
+          setTimeout(startRecording, 5000);
           Tts.speak('what do you want to name this recording');
-          setTimeout(start2, 12000);
+          setTimeout(() => {
+            resetVoiceHandlerToDefault();
+            Recording();
+          }, 12000);
         }
         else if (response.data.intent === "Play audio") {
-          // setIsRecording(true);
-          Recorder.onStartPlay();
+          resetVoiceHandlerToCaptureRecordingName();
+          setTimeout(startRecording, 5000);
+          Tts.speak('Which recording do you want to play?');
+          setIsRecording(true);
+          setTimeout(() => {
+            resetVoiceHandlerToDefault();
+            Recorder.onStartPlay(recordingName, () => setIsRecording(false));
+          }, 12000);
         }
         else if(response.data.intent === "instructions"){
           Tts.speak('Welcome First of all you need to double tap for any function to get perform');
@@ -263,9 +268,10 @@ export default function Open({ navigation }) {
     console.log("stop handler");
   }
 
-  const onSpeechResultsHandler3 = (e) => {
+  const getRecordingName = (e) => {
     if (e.value.length > 0) {
       console.log("name of the recording: ", e.value[0]);
+      recordingName = e.value[0];
     }
   }
   
@@ -423,8 +429,8 @@ export default function Open({ navigation }) {
       <Pressable onPress={() => {
         if (isRecording) {
           Recorder.onStopRecord();
-          // Tts.speak('Recording has been stopped');
           Recorder.onStopPlay();
+          recordingName = "";
           setIsRecording(false);
         }
         else
