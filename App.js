@@ -146,7 +146,7 @@ export default function App() {
   
   return (
     <NavigationContainer linking={linking} fallback={<Text>Loading...</Text>}>
-      <Stack.Navigator screenOptions={{ headerShown: false }} initialRouteName='open' >
+      <Stack.Navigator screenOptions={{ headerShown: false }} initialRouteName='main' >
         <Stack.Screen name="main" component={Main} />
         <Stack.Screen name="open" component={Open} />
         <Stack.Screen name="voiceOperations" component={VoiceOperations} />

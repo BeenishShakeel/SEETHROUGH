@@ -38,7 +38,7 @@ async function callFunctions() {
 	await BackgroundService.start(veryIntensiveTask, options);
 }
 
-// callFunctions();
+callFunctions();
 
 const onMessageReceived = (message) => {
 	Linking.openURL(

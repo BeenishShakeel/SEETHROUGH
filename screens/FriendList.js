@@ -2,6 +2,7 @@ import React, { useEffect } from 'react';
 import { Text, View, StyleSheet, Image, Pressable } from 'react-native';
 import Tts from 'react-native-tts';
 import firestore from '@react-native-firebase/firestore';
+import AsyncStorage from '@react-native-async-storage/async-storage';
 import Voice from '@react-native-voice/voice';
 
 export default function FriendList({ navigation, route}) {
@@ -12,17 +13,22 @@ export default function FriendList({ navigation, route}) {
 
 
     const myContactList = async () => {
+        console.log('in contact list')
         const userID = await AsyncStorage.getItem('userId');
+        const vID = await AsyncStorage.getItem('id')
+        console.log('blind DI ID',userID)
         firestore().collection('blind').doc(userID).update({
-            contacts: firestore.FieldValue.arrayUnion(route.params.userID)
+            contacts: firestore.FieldValue.arrayUnion(vID)
         });
         Tts.speak('contact added Successfully');
     }
 
     let timer = null;
+
+    
     const TIMEOUT = 500;
 
-    const debounce = (operation, op) => {
+    const debounce = async (operation, op) => {
         if (timer) {
             clearTimeout(timer);
             timer = null;
@@ -30,7 +36,9 @@ export default function FriendList({ navigation, route}) {
                 case 1: {
                     // add to contactlist
                     myContactList();
-                    navigation.navigate('rev',route.params.userID);
+                    const userID = await AsyncStorage.getItem('id');
+                    console.log("in list",userID);
+                    navigation.navigate('rev',userID);
                 }
                     break;
                 case 2: {

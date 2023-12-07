@@ -15,20 +15,28 @@ import { VolunteerSearchWithRating, VolunteerSearchFromContacts, VolunteerSearch
 import { setupVideoCall } from "./videoService";
 import Recorder from "./services/RecorderService";
 import Fuse from 'fuse.js';
+import Geolocation from '@react-native-community/geolocation';
 
 const voiceOperations = new VoiceOperations();
 
 export default function Open({ navigation }) {
-  const [lat, setLat] = useState(33.6500104);
-  const [long, setLong] = useState(73.1556531);
+  const [currentLocation, setCurrentLocation] = useState([0, 0]);
   const [lang, setlang] = useState("");
   const [contacts, setContacts] = useState([]);
   const [isRecording, setIsRecording] = useState(false);
+  const [hour,setHour] = useState(0);
+  const [min,setMin] = useState(0);
+  const [time, setTime] = useState("");
   let recordingName = "";
 
   const isFocused = useIsFocused();
 
   let phoneNumber = "";
+
+  useEffect(() => {
+    const time = new Date();
+    setTime(time.toLocaleString('en-US', {hour:'numeric', minute:'numeric', hour12: true}));
+  })
 
   useEffect(() => {
     if (isFocused) {
@@ -39,9 +47,9 @@ export default function Open({ navigation }) {
     Voice.onSpeechEnd = onSpeechEndHandler;
 
     var hasLocationPermission = requestLocationPermission();
-    if (hasLocationPermission) {
-      getLocation();
-    }
+    // if (hasLocationPermission) {
+    //   getLocation();
+    // }
 
     Contacts.getAll().then(fetchedContacts => {
       setContacts(fetchedContacts);
@@ -52,6 +60,27 @@ export default function Open({ navigation }) {
     }
 
   }, [isFocused]);
+
+  useEffect(() => {
+    const locationWatchId = Geolocation.watchPosition(
+      position => {
+        const { latitude, longitude } = position.coords;
+        setCurrentLocation([latitude, longitude]);
+      },
+      error => console.error(error),
+      { enableHighAccuracy: true, distanceFilter: 10 }
+    );
+
+    Geolocation.getCurrentPosition(position => {
+      const { latitude, longitude } = position.coords;
+      setCurrentLocation([latitude, longitude]);
+    });
+
+    // Clean up by clearing the watch subscriptions
+    return () => {
+      Geolocation.clearWatch(locationWatchId);
+    };
+  }, []);
 
   useEffect(() => {
     if (contacts.length !== 0) {
@@ -68,7 +97,7 @@ export default function Open({ navigation }) {
   }, [contacts]);
 
   useEffect(() => {
-    if(recordingName) {
+    if (recordingName) {
       console.log("Recording name: ", recordingName);
       Recording();
       Voice.destroy().then(() => {
@@ -119,27 +148,31 @@ export default function Open({ navigation }) {
 
   const detectIntentText = useCallback((query) => {
     console.log("detecting")
-    axios.post("http://192.168.18.11:8000/get-response", { query: query, location: { latitude: lat, longitude: long } })
+    axios.post("http://192.168.10.55:8000/get-response", { query: query, location: { latitude: currentLocation[0], longitude: currentLocation[1] } })
       .then(async (response) => {
         // console.log("Response: ", response.data);
-        if (response.data.intent === "search volunteer with good rating") {
+        if (response.data.intent === "search volunteer with good rating" || response.data.intent === "search volunteer") {
           console.log("i am here to search");
           VolunteerSearchWithRating()
-            .then(user => {
+            .then(async (user) => {
+              await AsyncStorage.setItem('id', user.userID);
               setupVideoCall(navigation, user);
+
             })
             .catch(err => console.error(err));
         }
         else if (response.data.intent === "search volunteer from contacts") {
           VolunteerSearchFromContacts()
-            .then(user => {
+            .then(async (user_) => {
+              await AsyncStorage.setItem('id', user.userID);
               setupVideoCall(navigation, user);
             })
             .catch(err => console.error(err));
         }
         else if (response.data.intent === "search volunteer with nearest location") {
           VolunteerSearchNearestLocation()
-            .then(user => {
+            .then(async (user) => {
+              await AsyncStorage.setItem('id', user.userID);
               setupVideoCall(navigation, user);
             })
             .catch(err => console.error(err));
@@ -212,6 +245,23 @@ export default function Open({ navigation }) {
           Tts.speak("Stopwatch has been started");
           return;
         }
+        else if (response.data.intent === "weather") {
+          console.log('weather')
+          axios.post(`https://api.openweathermap.org/data/2.5/weather?lat=${currentLocation[0]}&lon=${currentLocation[1]}&appid=fe1dd137bbba9ce8e767046856a9bef4`)
+            .then(response => {
+              const temp = response.data.main.temp - 273.15
+              Tts.speak(`weather today is ${response.data.weather[0].main}. It feels like ${temp.toLocaleString()} Celsius`);
+
+            })
+            .catch(err => console.error(err));
+        }
+        else if (response.data.intent === "Time") {
+          var hours = new Date().getHours(); //To get the Current Hours
+          var min = new Date().getMinutes(); //To get the Current Minutes
+          // console.log(ho)
+          Tts.speak(`Time is ${time}`)
+
+        }
         else if (response.data.intent === "Stop stopwatch") {
           const stopwatchReading = voiceOperations.stopStopwatch();
           Tts.speak(`Stopwatch has been stopped at ${stopwatchReading}`);
@@ -226,7 +276,7 @@ export default function Open({ navigation }) {
             Recording();
           }, 12000);
         }
-        else if (response.data.intent === "Play audio") {
+        else if (response.data.intent === "Play recording") {
           resetVoiceHandlerToCaptureRecordingName();
           setTimeout(startRecording, 5000);
           Tts.speak('Which recording do you want to play?');
@@ -236,7 +286,7 @@ export default function Open({ navigation }) {
             Recorder.onStartPlay(recordingName, () => setIsRecording(false));
           }, 12000);
         }
-        else if(response.data.intent === "instructions"){
+        else if (response.data.intent === "instructions") {
           Tts.speak('Welcome First of all you need to double tap for any function to get perform');
           Tts.speak('To do a sim call use keyword call contact name like call Ali');
           Tts.speak('To do a sim message use keyword message contact name. it will then ask you to record your message body');
@@ -258,7 +308,7 @@ export default function Open({ navigation }) {
 
       })
       .catch(err => console.error(err));
-  }, [contacts, lat, long]);
+  }, [contacts, currentLocation]);
 
   const onSpeechStartHandler = (e) => {
     console.log('start handler');
@@ -274,8 +324,8 @@ export default function Open({ navigation }) {
       recordingName = e.value[0];
     }
   }
-  
- 
+
+
   const onSpeechResultsHandler2 = (e) => {
     if (e.value.length > 0) {
       console.log("Message Body: ", e.value[0]);
@@ -352,7 +402,7 @@ export default function Open({ navigation }) {
 
   const english = async () => {
     Tts.setDefaultRate(0.4);
-    Tts.speak("Welcome! How can I assist you");
+    Tts.speak("Welcome! tap on the screen to get assistance");
   }
 
   const urdu = async () => {
@@ -371,7 +421,7 @@ export default function Open({ navigation }) {
     const options = {
       method: 'GET',
       url: 'https://nlp-translation.p.rapidapi.com/v1/translate',
-      params: { text: "welcome , How can I assist you", to: 'ur', from: 'en' },
+      params: { text: "welcome , tap on the screen to get assistance", to: 'ur', from: 'en' },
       headers: {
         'X-RapidAPI-Key': 'bac0b4a01dmsh637f968c8035314p1dc8b0jsn281bde6eebf7',
         'X-RapidAPI-Host': 'nlp-translation.p.rapidapi.com'
@@ -393,7 +443,7 @@ export default function Open({ navigation }) {
     const options = {
       method: 'GET',
       url: 'https://nlp-translation.p.rapidapi.com/v1/translate',
-      params: { text: "welcome , How can I assist you", to: 'fr', from: 'en' },
+      params: { text: "welcome , Tap on the screen to get assistance", to: 'fr', from: 'en' },
       headers: {
         'X-RapidAPI-Key': 'bac0b4a01dmsh637f968c8035314p1dc8b0jsn281bde6eebf7',
         'X-RapidAPI-Host': 'nlp-translation.p.rapidapi.com'

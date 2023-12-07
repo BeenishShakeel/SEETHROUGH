@@ -87,7 +87,11 @@ const Video = ({ navigation, route }) => {
   };
 
   const _onParticipantRemovedVideoTrack = ({ participant, track }) => {
-    twilioRef.current.disconnect();
+    console.log('onParticipantRemovedVideoTrack: ', participant, track);
+    const videoTracksLocal = videoTracks;
+    videoTracksLocal.delete(track.trackSid);
+    setVideoTracks(videoTracksLocal);
+    // twilioRef.current.disconnect();
   }
 
   const _onOffCameraFeed = event => {
@@ -149,16 +153,16 @@ const Video = ({ navigation, route }) => {
               onPress={_onMuteButtonPress}>
               <Text style={{ fontSize: 12, color: 'blue' }}>{isAudioEnabled ? "Mute" : "Unmute"}</Text>
             </TouchableOpacity>
-            <TouchableOpacity
+            {/* <TouchableOpacity
               style={styles.optionButton}
               onPress={_onFlipButtonPress}>
               <Text style={{ fontSize: 12, color: 'blue' }}>Flip</Text>
-            </TouchableOpacity>
-            <TouchableOpacity
+            </TouchableOpacity> */}
+            {/* <TouchableOpacity
               style={styles.optionButton}
               onPress={_onOffCameraFeed}>
               <Text style={{ fontSize: 12, color: 'blue' }}>Camera</Text>
-            </TouchableOpacity>
+            </TouchableOpacity> */}
             <TwilioVideoLocalView
               enabled={true}
               style={styles.localVideo}

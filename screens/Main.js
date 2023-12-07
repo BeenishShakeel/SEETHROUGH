@@ -4,17 +4,10 @@ import Tts from 'react-native-tts';
 import firestore from '@react-native-firebase/firestore';
 
 
-export default function FriendList({ navigation }) {
+export default function Main({ navigation }) {
     useEffect(()=>{
         Tts.speak('Double on the bottom of the screen to signup as a blind');
-    })
-    const myContactList = async () => {
-        const userID = await AsyncStorage.getItem('userId');
-        firestore().collection('blind').doc(userID).update({
-            contacts: firestore.FieldValue.arrayUnion(route.params.userID)
-        });
-        Tts.speak('contact added Successfully');
-    }
+    },[])
 
     let timer = null;
     const TIMEOUT = 500;

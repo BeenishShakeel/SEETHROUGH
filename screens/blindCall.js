@@ -52,13 +52,13 @@ const BlindVideo = ({ navigation, route }) => {
           break;
         case 2:
           // turn camera off
-          _onOffCameraFeed();
+          _onOffCameraFeed(false);
           break;
         case 3:
           _onMuteButtonPress();
           break;
         case 4:
-          _onEndButtonPress();
+          _onEndButtonPress(true);
           break;
         default: 
           console.log("Do nothing");
@@ -97,6 +97,7 @@ const BlindVideo = ({ navigation, route }) => {
   };
   const _onConnectButtonPress = () => {
     twilioRef.current.connect({ accessToken: token });
+    // Tts.speak('Searching the volunteer');
     setStatus('connecting');
   }
 
@@ -119,6 +120,11 @@ const BlindVideo = ({ navigation, route }) => {
     twilioRef.current.flipCamera();
   };
 
+  const disconnectRoom = () => {
+    twilioRef.current.disconnect();
+    navigation.navigate('FriendList',{userID: route.params.userID});
+  }
+
 
 
   const _onRoomDidConnect = ({ roomName, error }) => {
@@ -127,20 +133,6 @@ const BlindVideo = ({ navigation, route }) => {
     setStatus('connected');
     firestore().collection('users').doc(route.params.userID).update({ isEngaged: true });
   };
-
-  const onSpeechResultsHandler = async (e) => {
-    if (e.value.length > 0) {
-      setIsAnswer(e.value[0]);
-      // if(isAnswer == 'yes'){
-      //   await firestore().collection('blind').doc(userID).update({
-      //     contacts: firestore.FieldValue.arrayUnion(route.params.userID)
-      // })
-
-      //}
-    }
-    //navigation.goBack();
-
-  }
 
   const _onRoomDidDisconnect = async ({ roomName, error }) => {
     console.log('[Disconnect]ERROR: ', error);
@@ -185,7 +177,6 @@ const BlindVideo = ({ navigation, route }) => {
     const videoTracksLocal = videoTracks;
     videoTracksLocal.delete(track.trackSid);
     setVideoTracks(videoTracksLocal);
-    twilioRef.current.disconnect();
   };
   return (
     <View style={styles.container}>
@@ -276,6 +267,7 @@ const BlindVideo = ({ navigation, route }) => {
         onRoomDidFailToConnect={_onRoomDidFailToConnect}
         onParticipantAddedVideoTrack={_onParticipantAddedVideoTrack}
         onParticipantRemovedVideoTrack={_onParticipantRemovedVideoTrack}
+        onRoomParticipantDidDisconnect={disconnectRoom}
       />
     </View>
   );

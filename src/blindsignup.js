@@ -33,7 +33,7 @@ export default function BlindSignup({ navigation }) {
   const nonumber = useRef('');
 
   const [phoneNumber, setPhoneNumber] = useState('');
-  const [currentLocation, setCurrentLocation] = useState(0);
+  const [currentLocation, setCurrentLocation] = useState([0, 0]);
   const [audioInstance, setAudioInstance] = useState(null);
 
 
@@ -41,18 +41,23 @@ export default function BlindSignup({ navigation }) {
     const locationWatchId = Geolocation.watchPosition(
       position => {
         const { latitude, longitude } = position.coords;
-        setCurrentLocation({ latitude, longitude });
-        console.log(currentLocation)
+        setCurrentLocation([latitude, longitude]);
       },
       error => console.error(error),
       { enableHighAccuracy: true, distanceFilter: 10 }
     );
+
+    Geolocation.getCurrentPosition(position => {
+      const { latitude, longitude } = position.coords;
+      setCurrentLocation([latitude, longitude]);
+    });
 
     // Clean up by clearing the watch subscriptions
     return () => {
       Geolocation.clearWatch(locationWatchId);
     };
   }, []);
+
   const onSpeechError = (e) => {
 
     console.log("Speech recognition error:", e.error);
@@ -414,20 +419,21 @@ export default function BlindSignup({ navigation }) {
       console.log(language1);
 
       // Use the callback form to get the most up-to-date state
-      // setCurrentLocation(prevLocation => {
-      const { latitude, longitude } = currentLocation;
-      const geoPoint = new firestore.GeoPoint(latitude, longitude);
-      const userRef = firestore().collection('blind').doc(userId);
+      setCurrentLocation(prevLocation => {
+        const [latitude, longitude] = currentLocation;
+        console.log(latitude, longitude);
+        const geoPoint = new firestore.GeoPoint(latitude, longitude);
+        const userRef = firestore().collection('blind').doc(userId);
 
-      await userRef.set({
-        phonenumber: phone,
-        language: language,
-        location: geoPoint,
-        name: name
+        userRef.set({
+          phonenumber: phone,
+          language: language1,
+          location: geoPoint,
+          name: name
+        });
+
+        return prevLocation;
       });
-
-      //   return prevLocation;
-      // });
 
       ToastAndroid.show("Account Updated Successfully!", ToastAndroid.SHORT);
 

@@ -1,9 +1,12 @@
 import firestore from '@react-native-firebase/firestore';
 import { getDistance, getPreciseDistance } from 'geolib';
 import AsyncStorage from '@react-native-async-storage/async-storage';
+import Tts from 'react-native-tts';
 
 
 export const VolunteerSearchWithRating = () => {
+  console.log("i am searching volunteer");
+  Tts.speak('Searching the volunteer');
   return new Promise(async (resolve, reject) => {
     const userID = await AsyncStorage.getItem('userId');
     console.log(userID);
@@ -38,6 +41,7 @@ export const VolunteerSearchWithRating = () => {
 
 
 export const VolunteerSearchFromContacts =  () => {
+  Tts.speak('Searching the volunteer');
   return new Promise(async (resolve, reject) => {
     const userID = await AsyncStorage.getItem('userId');
     await firestore().collection('blind')
@@ -70,7 +74,7 @@ export const VolunteerSearchFromContacts =  () => {
 }
 
 export const VolunteerSearchNearestLocation = () => {
-
+  Tts.speak('Searching the volunteer');
   return new Promise(async (resolve, reject) => {
     let b_latitude = 0;
     let b_longitude = 0;

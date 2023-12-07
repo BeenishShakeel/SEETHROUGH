@@ -1,84 +1,77 @@
-import React, { useState , useEffect , useRef } from 'react';
-import {View, KeyboardAvoidingView, TouchableOpacity, Text, StyleSheet , Image ,ToastAndroid} from "react-native";
+import React, { useState, useEffect, useRef } from 'react';
+import { View, KeyboardAvoidingView, TouchableOpacity, Text, StyleSheet, Image, ToastAndroid } from "react-native";
 import Voice from '@react-native-voice/voice';
 import Sound from 'react-native-sound';
 import AsyncStorage from '@react-native-async-storage/async-storage';
 import firestore from '@react-native-firebase/firestore';
 import Tts from 'react-native-tts';
 import axios from 'axios';
-import open from '../src/open'; 
-export default function Rev({navigation,route}){
-    const [review, setreview] = useState(0);
-    const[language,setlangauge] = useState(0)
-    const[rate,setrate] = useState(0)
-    useEffect(() => {
-    getUserId();  
-      }, []);
-      const onSpeechError = (e) => {
-   
-        console.log("Speech recognition error:", e.error);
-      
-        
-        if (e.error.code === "6") { 
-      
-      
-        
-          setTimeout(() => {
-            navigation.navigate('open')
-           
-          }, 500); 
-        }
-        if (e.error.code === "7") {
-          
-          
-          setTimeout(() => {
-            navigation.navigate('open')
-          }, 500);
-        }
-      };
-      useEffect(() => {
-      
-        Voice.onSpeechError = onSpeechError;
-      
-        
-        return () => {
-          Voice.removeAllListeners();
-        };
-      }, []);
-     
+import open from '../src/open';
+export default function Rev({ navigation, route }) {
+  const [review, setreview] = useState(0);
+  const [language, setlangauge] = useState(0)
+  const [rate, setrate] = useState(0)
+  useEffect(() => {
+    getUserId();
+  }, []);
+  const onSpeechError = (e) => {
 
-      async function getUserId() {
-        try {
-          const userString = await AsyncStorage.getItem('userId');
-          if (userString !== null) {
-            console.log('User ID:', userString);
-            firestore().collection('blind').doc(userString).get().then(querySnapshot => {
-              console.log("Blind's data: ", querySnapshot[0].data());
-              AsyncStorage.setItem("language", querySnapshot[0].data().language);
-            });
-            const condition = await AsyncStorage.getItem('language')
-            if (condition === "English") {
-              english()
-            }
-            if (condition === "Urdu") {
-              urdu()
-            }
-            if (condition === "French") {
-              french()
-            }
-          }
-          else {
-            navigation.navigate("blindsignup")
-            console.log('User ID not found.');
-          }
-        } catch (error) {
-          console.error(error);
-        }
+    console.log("Speech recognition error:", e.error);
+
+
+    if (e.error.code === "6") {
+      setTimeout(() => {
+        navigation.navigate('open')
+
+      }, 500);
     }
-  
-    
-    const urdu = (audioURL) => {
-      const sound2 = new Sound(require('./nename.mp3'),
+    if (e.error.code === "7") {
+
+
+      setTimeout(() => {
+        navigation.navigate('open')
+      }, 500);
+    }
+  };
+  useEffect(() => {
+
+    Voice.onSpeechError = onSpeechError;
+    return () => {
+      Voice.removeAllListeners();
+    };
+  }, []);
+
+
+  async function getUserId() {
+    try {
+      const userString = await AsyncStorage.getItem('userId');
+      if (userString !== null) {
+        console.log('User ID:', userString);
+        firestore().collection('blind').doc(userString).get().then(querySnapshot => {
+          console.log("Blind's data: ", querySnapshot[0].data());
+          AsyncStorage.setItem("language", querySnapshot[0].data().language);
+        });
+        const condition = await AsyncStorage.getItem('language')
+        if (condition === "English") {
+          english()
+        }
+        if (condition === "Urdu") {
+          urdu()
+        }
+        if (condition === "French") {
+          french()
+        }
+      }
+      else {
+        navigation.navigate("blindsignup")
+        console.log('User ID not found.');
+      }
+    } catch (error) {
+      console.error(error);
+    }
+  }
+  const urdu = (audioURL) => {
+    const sound2 = new Sound(require('./nename.mp3'),
       (error, sound) => {
         if (error) {
           alert('error' + error.message);
@@ -86,94 +79,89 @@ export default function Rev({navigation,route}){
         }
         sound2.play(() => {
           sound2.release();
-         
-            start();
-      
+
+          start();
+
         });
       });
-      
-   
-      
+  }
+  const french = (audioURL) => {
+    const options = {
+      method: 'GET',
+      url: 'https://nlp-translation.p.rapidapi.com/v1/translate',
+      params: { text: "Kindly give a opinion about our volunteers. Your can say good or fine orbad", to: 'fr', from: 'en' },
+      headers: {
+        'X-RapidAPI-Key': 'bac0b4a01dmsh637f968c8035314p1dc8b0jsn281bde6eebf7',
+        'X-RapidAPI-Host': 'nlp-translation.p.rapidapi.com'
+      }
+    };
+    axios.request(options).then(function (response) {
+      const result = response.data;
+      const text = result.translated_text[result.to];
 
-       }
-       const french = (audioURL) => {
-        const options = {
-          method: 'GET',
-          url: 'https://nlp-translation.p.rapidapi.com/v1/translate',
-          params: { text: "Kindly give a opinion about our volunteers. Your options for opinion  are these ,  good , fine   ,   bad", to: 'fr', from: 'en' },
-          headers: {
-            'X-RapidAPI-Key': 'bac0b4a01dmsh637f968c8035314p1dc8b0jsn281bde6eebf7',
-            'X-RapidAPI-Host': 'nlp-translation.p.rapidapi.com'
-          }
-        };
-        axios.request(options).then(function (response) {
-          const result = response.data;
-          const text = result.translated_text[result.to];
-      
-          Tts.setDefaultRate(0.3);
-          Tts.speak(text);
-          Tts.addEventListener('tts-finish', () => {
-            start();
-          });
-    
-   
-        })
-       
-       }
-       const english = (audioURL) => {
-        Tts.setDefaultRate(0.4)
-        Tts.speak("Kindly give a opinion about our volunteers. Your options for opinion  are these ,  good , fine   ,   bad");
-      
-       Tts.addEventListener('tts-finish', () => {
+      Tts.setDefaultRate(0.3);
+      Tts.speak(text);
+      Tts.addEventListener('tts-finish', () => {
         start();
       });
-     
-     
-       }
-      const start = async() =>
-      {
-       Voice.onSpeechStart = onSpeechStartHandler;
-       Voice.onSpeechEnd = onSpeechEndHandler;
-       Voice.onSpeechResults = onSpeechResultsHandler2;
-       startRecording();
-       return () => {
-         Voice.destroy().then(Voice.removeAllListeners);
-       }
 
-      }
-     
 
-const startRecording = async () => {
-try {
-console.log("start")
-await Voice.start('en-Us')
-} catch (error) {
-console.log("error raised", error)
-}
-stopRecording();
-console.log("stop")
-}
-const stopRecording = async () => {
-try {
-await Voice.stop()
+    })
 
-} catch (error) {
-console.log("error raised", error)
-}
-}
-const onSpeechStartHandler = (e) => {
-console.log("starttterrr handler==>>>", e)
-}
-const onSpeechEndHandler = (e) => {
+  }
+  const english = (audioURL) => {
+    Tts.setDefaultRate(0.4)
+    Tts.speak("Kindly give a opinion about our volunteers. You can say good or fine or bad");
 
-console.log("stop handler", e)
+    Tts.addEventListener('tts-finish', () => {
+      start();
+    });
 
-}
 
-const onSpeechResultsHandler2 = async(e) => {
+  }
+  const start = async () => {
+    Voice.onSpeechStart = onSpeechStartHandler;
+    Voice.onSpeechEnd = onSpeechEndHandler;
+    Voice.onSpeechResults = onSpeechResultsHandler2;
+    startRecording();
+    return () => {
+      Voice.destroy().then(Voice.removeAllListeners);
+    }
+
+  }
+
+
+  const startRecording = async () => {
+    try {
+      console.log("start")
+      await Voice.start('en-Us')
+    } catch (error) {
+      console.log("error raised", error)
+    }
+    // stopRecording();
+    console.log("stop")
+  }
+  const stopRecording = async () => {
+    try {
+      await Voice.stop()
+
+    } catch (error) {
+      console.log("error raised", error)
+    }
+  }
+  const onSpeechStartHandler = (e) => {
+    console.log("starttterrr handler==>>>", e)
+  }
+  const onSpeechEndHandler = (e) => {
+
+    console.log("stop handler", e)
+
+  }
+
+  const onSpeechResultsHandler2 = async (e) => {
     console.log(e.value.toString())
     const text = e.value.toString()
-    const text1 = text.split(',')[0].trim().toLowerCase().replace(/\s/g, ''); ;
+    const text1 = text.split(',')[0].trim().toLowerCase().replace(/\s/g, '');;
     console.log(text1)
     let rate = 0;
     if (text1.includes("bura")) {
@@ -190,50 +178,50 @@ const onSpeechResultsHandler2 = async(e) => {
     } else if (text1.includes("fine")) {
       rate = 3;
     }
-     else if (text1.includes("bad")) {
+    else if (text1.includes("bad")) {
       rate = 1;
-    } 
-    
-   // const userString =  await AsyncStorage.getItem('userId');
-   try{
-              const userRef = firestore().collection('users').doc(route.params.userID);
-              // userRef.update({
-              //   rating: rate,
-              // });
-              const userDoc = await userRef.get();
-              const userRatings = userDoc.data().ratings || [];
-          
-              // Add the new rating to the array
-              userRatings.push(rate);
-          
-              // Calculate the average rating
-              const averageRating = userRatings.reduce((sum, rating) => sum + rating, 0) / userRatings.length;
-              const roundedAverageRating = parseFloat(averageRating.toFixed(1));
-              // Update the average rating in the user document
-              userRef.update({
-                rating: roundedAverageRating,
-                ratings: userRatings, 
-              });
-            } catch (error) {
-              console.error('Error updating rating:', error);
-            }
-          
-    navigation.navigate('open')
     }
 
+    const userID =  await AsyncStorage.getItem('id');
+    // console.log("user ki id agye  h:",userID);
+    try {
+      //const userRef = await firestore().collection('users').doc(userID).get();
+      // // userRef.update({
+      // //   rating: rate,
+      // // });
+      // const userDoc = await userRef.get();
+      // const userRatings = userDoc.data().ratings || [];
 
+      // // Add the new rating to the array
+      // userRatings.push(rate);
 
-
-
-
-    return(
-      <View style={{ flex: 1 }}>
       
-        <Image source={require("../assets/images/gh.gif")} style={styles.backgroundImage}
-        />
-     
+
+      // Calculate the average rating
+      const averageRating = userRatings.reduce((sum, rating) => sum + rating, 0) / userRatings.length;
+      const roundedAverageRating = parseFloat(averageRating.toFixed(1));
+      // Update the average rating in the user document
+      // userRef.update({
+      //   rating: roundedAverageRating,
+      //   ratings: userRatings,
+      // }); 
+      firestore().collection('users').doc(userID).update({
+        ratings: firestore.FieldValue.arrayUnion(userRatings),
+        rating: roundedAverageRating
+    });
+    } catch (error) {
+      console.error('Error updating rating:', error);
+    }
+    navigation.navigate('open')
+  }
+  return (
+    <View style={{ flex: 1 }}>
+
+      <Image source={require("../assets/images/gh.gif")} style={styles.backgroundImage}
+      />
+
     </View>
-    )
+  )
 }
 const styles = StyleSheet.create({
   container: {
